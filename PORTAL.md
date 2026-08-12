@@ -124,13 +124,79 @@ Touch these, in this order:
 4. Write it down in [API-CONTRACT.md](API-CONTRACT.md), so whoever builds the
    real backend knows it exists.
 
-### Look inside the database
+## Seeing the database
 
-`demo.db` is an ordinary SQLite file. Open it with any SQLite browser, or:
+`demo.db` in the project root is an ordinary SQLite file — the same format used
+by phones, browsers and plenty of production systems. You can open it and look
+around while the app runs.
+
+### DB Browser for SQLite
+
+The tool to use. Free, open source, and available for Windows, macOS and Linux:
+
+**<https://sqlitebrowser.org>**
+
+On Windows pick the standard installer (the "DB Browser for SQLite" download,
+not the "SQLCipher" one). Then:
+
+1. **Run the portal at least once first.** The tables do not exist until the
+   first request creates them. If `demo.db` is missing, that is why.
+2. Open DB Browser → **Open Database** → pick `demo.db` in the project folder.
+3. **Database Structure** tab — every table, its columns and their types. This
+   is the same schema written in [`demo-backend/db.ts`](demo-backend/db.ts);
+   comparing the two is a good way to learn how `CREATE TABLE` maps to what you
+   see.
+4. **Browse Data** tab — pick a table from the dropdown and read the rows.
+5. **Execute SQL** tab — write your own queries:
+
+   ```sql
+   SELECT title, duration_seconds FROM notes ORDER BY created_at DESC;
+   ```
+
+Three things that will confuse you otherwise:
+
+- **Open the file where it sits.** While the dev server is running, recent
+  writes can live in a `demo.db-wal` file next to `demo.db`. Any SQLite tool
+  that opens `demo.db` in place reads both and sees everything. Copy
+  `demo.db` somewhere else on its own and you may get a stale database.
+- **Refresh after using the app.** DB Browser shows a snapshot. Click on the
+  app, then use **Refresh**/reopen to see the new rows.
+- **Editing rows?** DB Browser holds your changes until you click **Write
+  Changes**. Until then the app cannot see them.
+
+### Without installing anything
+
+If you use VS Code, the **SQLite Viewer** extension opens a `.db` file straight
+in the editor. Or read a table from the terminal with the Node you already have:
 
 ```bash
 node -e "const{DatabaseSync}=require('node:sqlite');console.table(new DatabaseSync('demo.db').prepare('SELECT id,title,duration_seconds FROM notes').all())"
 ```
+
+### What is in there
+
+Fifteen tables, with the row counts you get from a fresh `npm run db:reset`:
+
+| Table | Rows | Holds |
+|---|---|---|
+| `users` | 1 | The single demo account, including its NB Points balance |
+| `wallet_activities` | 8 | Every points movement — recharges, grants, notes usage |
+| `notes` | 3 | Generated notes, including the Markdown body |
+| `note_jobs` | 2 | Notes-generation jobs and their status |
+| `transcript_sessions` | 1 | Uploaded transcripts not yet turned into notes |
+| `point_packages` | 3 | The NB Points packs on the recharge screen |
+| `payment_gateways` | 1 | Available payment methods |
+| `payment_orders` | 0 | Recharges you make — fills as you use the app |
+| `billing_rule_sets` | 1 | Which pricing scheme is active |
+| `billing_duration_rules` | 4 | What a note costs, by recording length |
+| `coupons` | 3 | `DEMO25`, `FREE10`, `EXPIRED` |
+| `coupon_redemptions` | 0 | Which coupons this account has used |
+| `account_deletion_requests` | 0 | A pending deletion request, if any |
+| `otp_challenges` | 0 | The mobile verification code in flight |
+| `app_settings` | 3 | Odds and ends: retention days, max recording length, referral reward |
+
+The empty ones fill in as you use the portal. Recharge some points and watch
+`payment_orders` and `wallet_activities` grow.
 
 ## What is real and what is pretend
 
