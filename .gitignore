@@ -26,3 +26,7 @@ Thumbs.db
 # logs
 *.log
 npm-debug.log*
+
+# claude
+.claude/
+CLAUDE.md
