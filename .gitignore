@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# next.js build output
+.next/
+out/
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# the demo database — rebuilt from demo-backend/data/*.json on first run
+demo.db
+demo.db-wal
+demo.db-shm
+
+# local environment overrides
+.env
+.env.local
+.env*.local
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
+npm-debug.log*

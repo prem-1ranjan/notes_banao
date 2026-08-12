@@ -1,0 +1,15 @@
+[
+  {
+    "id": "ts_demo_1",
+    "title": "Compiler Design - Lexical Analysis",
+    "status": "uploaded",
+    "mode": "continuous",
+    "segmentCount": 42,
+    "uploadedDurationMs": 2520000,
+    "totalDurationMs": 2700000,
+    "recoveryReason": "network_lost",
+    "recoveryWarning": "The last 3 minutes of this recording were not uploaded, so the notes may end early.",
+    "recoveryAvailableAt": "2026-08-12T03:20:00.000Z",
+    "updatedAt": "2026-08-12T03:15:00.000Z"
+  }
+]

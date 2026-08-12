@@ -1,0 +1,41 @@
+{
+  "packages": [
+    {
+      "code": "starter_50",
+      "name": "Starter",
+      "price_paise": 4900,
+      "currency": "INR",
+      "base_points": 50,
+      "bonus_points": 0,
+      "total_points": 50
+    },
+    {
+      "code": "regular_200",
+      "name": "Regular",
+      "price_paise": 19900,
+      "currency": "INR",
+      "base_points": 200,
+      "bonus_points": 20,
+      "total_points": 220
+    },
+    {
+      "code": "semester_500",
+      "name": "Semester",
+      "price_paise": 44900,
+      "currency": "INR",
+      "base_points": 500,
+      "bonus_points": 75,
+      "total_points": 575
+    }
+  ],
+  "payment_gateways": [
+    {
+      "code": "demo_gateway",
+      "display_name": "Demo Payments",
+      "provider_type": "demo",
+      "environment": "demo",
+      "active": true,
+      "sort_order": 1
+    }
+  ]
+}

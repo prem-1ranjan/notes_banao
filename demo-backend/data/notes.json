@@ -1,0 +1,60 @@
+{
+  "retentionDays": 30,
+  "maxRecordingMinutes": 180,
+  "notes": [
+    {
+      "id": "note_demo_1",
+      "title": "Operating Systems - Process Scheduling",
+      "created_at": "2026-08-11T14:32:00.000Z",
+      "duration_seconds": 3120,
+      "billing_mode": "duration",
+      "preview_limited": false,
+      "preview_limit_minutes": null,
+      "markdown": "# Operating Systems - Process Scheduling\n\n## What the lecture covered\n\nThe scheduler decides which ready process gets the CPU next. Every policy is a trade-off between throughput, latency and fairness — there is no single best answer.\n\n## Key algorithms\n\n### First Come First Served (FCFS)\n\n- Non-preemptive, runs processes in arrival order.\n- Simple, but suffers from the **convoy effect**: one long job at the head of the queue stalls every short job behind it.\n\n### Shortest Job First (SJF)\n\n- Provably optimal for average waiting time.\n- Impractical on its own — the scheduler cannot know burst times in advance, so real systems *estimate* them with an exponential average.\n\n### Round Robin (RR)\n\n- Preemptive FCFS with a time quantum `q`.\n- Choosing `q` is the whole game:\n  - `q` too large -> degenerates into FCFS\n  - `q` too small -> context-switch overhead dominates\n- Rule of thumb: 80% of CPU bursts should finish inside one quantum.\n\n### Multilevel Feedback Queue\n\nWhat Linux, Windows and macOS actually approximate. A process starts in a high-priority short-quantum queue and is demoted as it uses more CPU, so interactive work stays responsive while batch work still makes progress.\n\n## Comparison\n\n| Algorithm | Preemptive | Starvation risk | Best for |\n|---|---|---|---|\n| FCFS | No | Low | Batch systems |\n| SJF | Optional | High | Known burst lengths |\n| Round Robin | Yes | None | Time sharing |\n| Priority | Optional | High (needs ageing) | Real-time-ish workloads |\n\n## Worked example\n\nThree processes arrive at t=0 with bursts 24, 3, 3 ms. Under FCFS the average waiting time is (0 + 24 + 27) / 3 = **17 ms**. Reorder them shortest-first and it drops to (0 + 3 + 6) / 3 = **3 ms** — same work, same CPU, five times better latency.\n\n## Exam pointers\n\n1. Be able to draw the Gantt chart before computing averages.\n2. Waiting time = turnaround time - burst time.\n3. Starvation is solved by **ageing**, not by raising the quantum.\n"
+    },
+    {
+      "id": "note_demo_2",
+      "title": "Data Structures - Balanced Trees",
+      "created_at": "2026-08-10T09:11:00.000Z",
+      "duration_seconds": 2760,
+      "billing_mode": "duration",
+      "preview_limited": false,
+      "preview_limit_minutes": null,
+      "markdown": "# Data Structures - Balanced Trees\n\n## Why balance matters\n\nA binary search tree gives `O(log n)` lookup only while it stays bushy. Insert already-sorted keys into a plain BST and it degenerates into a linked list — `O(n)` per operation. Balanced trees add a rebalancing rule so the height stays `O(log n)` no matter the insert order.\n\n## AVL trees\n\n- Invariant: for every node, `|height(left) - height(right)| <= 1`.\n- Rebalanced with four rotation cases: LL, RR, LR, RL.\n- Strictly balanced, so lookups are fast, but inserts/deletes rotate more often.\n\n## Red-black trees\n\n- Weaker invariant: no red node has a red child, and every root-to-leaf path has the same number of black nodes.\n- Height is at most `2 * log2(n + 1)` — slightly taller than AVL, but far fewer rotations per write.\n- This is why `std::map`, `TreeMap` and the Linux CFS scheduler all use red-black trees.\n\n## Choosing between them\n\n| | AVL | Red-black |\n|---|---|---|\n| Lookup | Faster | Slightly slower |\n| Insert / delete | More rotations | Fewer rotations |\n| Typical use | Read-heavy indexes | General purpose maps |\n\n## B-trees, briefly\n\nWhen the data lives on disk, the cost is dominated by block reads, not comparisons. A B-tree of order `m` stores up to `m-1` keys per node so one disk block answers many comparisons at once. That is the entire reason database indexes are B+ trees rather than red-black trees.\n\n## Things worth memorising\n\n1. A rotation is a **local** pointer rewrite — it never touches more than three nodes.\n2. Rebalancing after an insert costs at most one rotation in a red-black tree.\n3. Deletion is the hard case in every balanced tree; know at least one worked example.\n"
+    },
+    {
+      "id": "note_demo_3",
+      "title": "Microeconomics - Elasticity of Demand",
+      "created_at": "2026-08-06T16:05:00.000Z",
+      "duration_seconds": 1860,
+      "billing_mode": "duration",
+      "preview_limited": true,
+      "preview_limit_minutes": 10,
+      "markdown": "# Microeconomics - Elasticity of Demand\n\n## Definition\n\nPrice elasticity of demand measures how strongly quantity demanded reacts to a price change:\n\n`Ed = (% change in quantity demanded) / (% change in price)`\n\nBecause the two move in opposite directions, `Ed` is negative — by convention we discuss its absolute value.\n\n## Reading the number\n\n| Value | Name | Meaning |\n|---|---|---|\n| `|Ed| > 1` | Elastic | Buyers are price sensitive |\n| `|Ed| = 1` | Unit elastic | Revenue unchanged by price moves |\n| `|Ed| < 1` | Inelastic | Buyers keep buying anyway |\n\n## What makes demand elastic\n\n1. **Substitutes available** — the single biggest factor.\n2. **Share of income** — a costlier item gets more scrutiny.\n3. **Necessity vs luxury** — insulin is inelastic, cruises are not.\n4. **Time horizon** — demand is almost always more elastic in the long run, because buyers can restructure their habits.\n\n## Link to revenue\n\nTotal revenue = price x quantity. If demand is elastic, a price *cut* raises revenue; if inelastic, a price *rise* raises revenue. This single relationship explains most real pricing decisions.\n\n> Note: this transcript was captured under the free preview limit, so only the first 10 minutes of the lecture were transcribed.\n"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "job_demo_1",
+      "title": "Linear Algebra - Eigenvalues",
+      "status": "generating",
+      "error_code": "",
+      "error_message": "",
+      "notes_id": null,
+      "created_at": "2026-08-12T04:58:00.000Z",
+      "updated_at": "2026-08-12T05:01:00.000Z",
+      "duration_seconds": 2400
+    },
+    {
+      "id": "job_demo_2",
+      "title": "Thermodynamics - Second Law",
+      "status": "failed",
+      "error_code": "transcript_quality",
+      "error_message": "The transcript was too short to generate notes.",
+      "notes_id": null,
+      "created_at": "2026-08-09T17:40:00.000Z",
+      "updated_at": "2026-08-09T17:45:00.000Z",
+      "duration_seconds": 1980
+    }
+  ]
+}
