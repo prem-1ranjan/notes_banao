@@ -11,24 +11,34 @@ If you have not got it running yet, do [README.md](README.md) first.
 it would in production.
 
 ```
-React components ──► lib/api-client.ts ──► HTTP ──► app/api/* ──► demo-backend/
-    (browser)            (the boundary)          (route handlers)    (SQLite)
+                                          ┌─► app/api/* ──► demo-backend/  (Node, SQLite)
+React components ─► lib/api-client.ts ─HTTP┤
+    (browser)         (the boundary)      └─► java_backend/                (Spring Boot)
 ```
 
-Everything to the left of the arrow could be deployed on its own against a
-completely different backend. Keep it that way:
+Which arrow is taken depends on one environment variable, and on nothing else:
+
+| `NEXT_PUBLIC_API_BASE_URL` | Where requests go |
+|---|---|
+| unset | this app's own `/api/*` routes, i.e. `demo-backend/` |
+| `http://127.0.0.1:8080` | the Java service in `java_backend/` |
+| anything else | whatever you point it at |
+
+Everything to the left of the boundary could be deployed on its own against a
+completely different backend, and that is worth protecting:
 
 - Components never call `fetch` directly — they use `apiFetch` / `apiJson` from
   [`lib/api-client.ts`](lib/api-client.ts).
 - Nothing under `app/` imports from `demo-backend/`, except the `app/api/*`
-  route handlers (which *are* the backend) and [`lib/session.ts`](lib/session.ts).
+  route handlers (which *are* one of the backends) and
+  [`lib/session.ts`](lib/session.ts), which is the server-side half of the
+  boundary and switches on the same variable.
 - If a screen needs data it cannot get, **add an endpoint** — do not reach into
   the database from a component.
 
-Why it matters: the backend here is a stand-in. Point
-`NEXT_PUBLIC_API_BASE_URL` at a real API and the entire front end talks to that
-instead, with no component changes. [API-CONTRACT.md](API-CONTRACT.md) writes
-down every endpoint so that backend can be built in any language.
+[API-CONTRACT.md](API-CONTRACT.md) is what makes this work: it writes down every
+endpoint precisely enough that a backend can be built in any language. The Java
+one exists to prove that, and a Python one is planned.
 
 ## The map
 
@@ -51,14 +61,25 @@ lib/                        UI-side helpers
   business-info.ts          brand, contact, GST details (placeholders here)
   downloads-info.ts         the app download cards
 
-demo-backend/               the fake backend — delete it when a real one exists
+demo-backend/               stand-in backend #1 — Node, runs inside this app
   db.ts                     SQLite connection, table definitions, seeding
   queries.ts                every SQL statement, one named function each
   session.ts                the demo session cookie
   data/*.json               the sample data
 
+java_backend/               stand-in backend #2 — Spring Boot, its own service
+  src/main/java/...         API interfaces, controllers, services, DTOs
+  src/main/resources/seed   a copy of demo-backend/data
+  README.md                 how to run it and how it is organised
+
 public/notes-pdf/           vendored PDF renderer (third-party, don't edit)
 ```
+
+Neither backend is the real one, and they are interchangeable. If you have not
+written a Spring Boot service before,
+[java_backend/README.md](java_backend/README.md) is worth a read — it is a
+conventional package-by-feature layout, and it explains why the API interfaces
+are kept separate from the classes that implement them.
 
 ## Follow one thing end to end
 

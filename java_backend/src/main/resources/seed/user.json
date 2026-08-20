@@ -1,0 +1,10 @@
+{
+  "id": "usr_demo_1",
+  "email": "demo@notesbanao.test",
+  "email_verified": true,
+  "has_password": true,
+  "phone_e164": null,
+  "phone_verified": false,
+  "status": "active",
+  "terms_accepted_current": true
+}

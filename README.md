@@ -5,9 +5,19 @@ profile, downloads), and the public marketing and policy pages.
 
 NotesBanao records a lecture, transcribes it on your own device, and turns the
 transcript into study notes. This repository is only the **portal** — the web
-app users sign in to. The production backend is not included. In its place is a
-small demo backend that keeps everything in a local SQLite file, so the whole
-portal works offline with nothing to install and no accounts to create.
+app users sign in to. The production backend is not included.
+
+In its place the repository ships **two** stand-in backends, and the front end
+works with either:
+
+| Backend | Where | What it is |
+|---|---|---|
+| **Node demo backend** (default) | `demo-backend/` | Runs inside the Next.js app, stores everything in a local SQLite file. Nothing to install or start. |
+| **Java / Spring Boot** | `java_backend/` | A separate service on port 8080. The API surface is defined as Java interfaces; the data behind them is in memory. |
+
+Both implement the same contract, written down in
+[API-CONTRACT.md](API-CONTRACT.md). Switching between them is one environment
+variable and no code change — see [Choosing a backend](#choosing-a-backend).
 
 **New here? Read [PORTAL.md](PORTAL.md) after you have it running** — it explains
 how the project is put together and where to start changing things.
@@ -74,6 +84,47 @@ You should land on the dashboard with 240 NB Points, a few notes, and an
 unfinished recording waiting to be turned into notes.
 
 ---
+
+## Choosing a backend
+
+By default the portal talks to its own bundled Node demo backend and needs no
+configuration. To point it at the Java service instead:
+
+**1. Start the Java backend** in a second terminal:
+
+```bash
+cd java_backend
+```
+
+```bash
+mvn spring-boot:run
+```
+
+It needs JDK 21 and Maven, and listens on port 8080. See
+[java_backend/README.md](java_backend/README.md).
+
+**2. Tell the front end where it is.** Create `.env.local` in this folder:
+
+```
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8080
+```
+
+`.env.example` is a template you can copy.
+
+**3. Restart `npm run dev`.** Next.js only reads env files at startup.
+
+Everything works the same, and the sign-in details below are unchanged. Delete
+the line from `.env.local` to go back to the Node backend.
+
+> Use the **same hostname** for both. `npm run dev` serves 127.0.0.1, so use
+> 127.0.0.1 for the API too. Cookies are shared across ports on one host, but
+> 127.0.0.1 and localhost count as different hosts, and mixing them makes every
+> request look signed out.
+
+Two differences to expect against the Java backend: its data lives in memory, so
+a restart resets it (`npm run db:reset` is for the Node backend only), and the
+invoice seller details come from `java_backend/src/main/resources/application.yml`
+rather than `lib/business-info.ts`.
 
 ## Commands
 

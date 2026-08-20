@@ -1,0 +1,39 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: notesbanao-portal-backend
+  jackson:
+    # The contract omits fields that do not apply rather than sending nulls,
+    # and several responses rely on that (termsRequired, dev_otp, payment_url).
+    default-property-inclusion: non_null
+
+portal:
+  cors:
+    # The front end origin. Must be exact, because the requests carry cookies.
+    # Use the same hostname the front end runs on: cookies are shared across
+    # ports on one host, but 127.0.0.1 and localhost count as different hosts.
+    allowed-origins:
+      - http://127.0.0.1:3000
+      - http://localhost:3000
+  session:
+    cookie-name: notesbanao_demo_session
+    max-age-seconds: 604800
+    secure: false
+  demo:
+    otp: "123456"
+    reset-endpoint-enabled: true
+  seller:
+    # Placeholders, same as lib/business-info.ts on the front end. Never put
+    # real registration details in this repository.
+    legal-name: Demo Owner
+    gstin: 00AAAAA0000A1Z0
+    address: 1 Demo Street, Example City - 000000
+    state-name: Karnataka
+    state-code: "29"
+    gst-rate-bps: 1800
+
+logging:
+  level:
+    com.notesbanao.portal: INFO

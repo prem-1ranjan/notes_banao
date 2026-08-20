@@ -1,0 +1,58 @@
+{
+  "rule_sets": [
+    {
+      "id": "rs_demo_1",
+      "code": "note_duration_v1",
+      "product_code": "note_generation",
+      "billing_mode": "duration",
+      "active": 1
+    }
+  ],
+  "duration_rules": [
+    {
+      "id": "dr_demo_1",
+      "rule_set_code": "note_duration_v1",
+      "min_duration_seconds": 0,
+      "max_duration_seconds": 1800,
+      "charge_points": 1,
+      "label": "Up to 30 minutes",
+      "sort_order": 1,
+      "active": 1
+    },
+    {
+      "id": "dr_demo_2",
+      "rule_set_code": "note_duration_v1",
+      "min_duration_seconds": 1801,
+      "max_duration_seconds": 3600,
+      "charge_points": 2,
+      "label": "30 to 60 minutes",
+      "sort_order": 2,
+      "active": 1
+    },
+    {
+      "id": "dr_demo_3",
+      "rule_set_code": "note_duration_v1",
+      "min_duration_seconds": 3601,
+      "max_duration_seconds": 7200,
+      "charge_points": 4,
+      "label": "1 to 2 hours",
+      "sort_order": 3,
+      "active": 1
+    },
+    {
+      "id": "dr_demo_4",
+      "rule_set_code": "note_duration_v1",
+      "min_duration_seconds": 7201,
+      "max_duration_seconds": null,
+      "charge_points": 6,
+      "label": "Over 2 hours",
+      "sort_order": 4,
+      "active": 1
+    }
+  ],
+  "referral_reward": {
+    "code": "referral_v1",
+    "points_amount": 15,
+    "active": true
+  }
+}

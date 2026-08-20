@@ -1,0 +1,26 @@
+[
+  {
+    "code": "DEMO25",
+    "kind": "percent_off",
+    "description": "25% off any NB Points pack",
+    "percent_off": 25,
+    "free_points": 0,
+    "active": true
+  },
+  {
+    "code": "FREE10",
+    "kind": "free_points",
+    "description": "10 free NB Points, no payment needed",
+    "percent_off": 0,
+    "free_points": 10,
+    "active": true
+  },
+  {
+    "code": "EXPIRED",
+    "kind": "free_points",
+    "description": "An expired coupon, for testing the error state",
+    "percent_off": 0,
+    "free_points": 0,
+    "active": false
+  }
+]

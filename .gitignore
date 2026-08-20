@@ -30,3 +30,6 @@ npm-debug.log*
 # claude
 .claude/
 CLAUDE.md
+
+# java backend build output
+java_backend/target/
