@@ -4,10 +4,19 @@ server:
 spring:
   application:
     name: notesbanao-portal-backend
+  datasource:
+      url: jdbc:sqlite:notesbanao.db
+      driver-class-name: org.sqlite.JDBC
+  jpa:
+        database-platform:  org.hibernate.community.dialect.SQLiteDialect
+        hibernate:
+          ddl-auto: update
+        show-sql: true
   jackson:
     # The contract omits fields that do not apply rather than sending nulls,
     # and several responses rely on that (termsRequired, dev_otp, payment_url).
     default-property-inclusion: non_null
+
 
 portal:
   cors:
