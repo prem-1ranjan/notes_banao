@@ -27,15 +27,23 @@ public class SessionService {
 
     private final PortalProperties properties;
     private final DemoDataStore store;
+    private final JwtUtil jwtUtil;
 
-    public SessionService(PortalProperties properties, DemoDataStore store) {
+
+    public SessionService(PortalProperties properties, DemoDataStore store,JwtUtil jwtUtil) {
         this.properties = properties;
         this.store = store;
+        this.jwtUtil = jwtUtil;
     }
 
     /** The signed-in user, or null when there is no session cookie. */
     public UserDto currentUser(HttpServletRequest request) {
-        return hasSessionCookie(request) ? store.user() : null;
+        String email = extractEmailFromCookie(request);
+
+        if (email == null) {
+            return null;
+        }
+        return store.user();
     }
 
     /** The signed-in user, or a 401 that the front end turns into a redirect. */
@@ -48,7 +56,8 @@ public class SessionService {
     }
 
     public void startSession(HttpServletResponse response, String email) {
-        write(response, email, properties.getSession().getMaxAgeSeconds());
+        String token = jwtUtil.generateToken(email);
+        write(response, token, properties.getSession().getMaxAgeSeconds());
     }
 
     public void endSession(HttpServletResponse response) {
@@ -67,18 +76,34 @@ public class SessionService {
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
+//its not verifying any signature,just checks cookie existance and cookie is not empty
+//    private boolean hasSessionCookie(HttpServletRequest request) {
+//        Cookie[] cookies = request.getCookies();
+//        if (cookies == null) {
+//            return false;
+//        }
+//        String name = properties.getSession().getCookieName();
+//        for (Cookie cookie : cookies) {
+//            if (name.equals(cookie.getName()) && cookie.getValue() != null && !cookie.getValue().isBlank()) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+//}
 
-    private boolean hasSessionCookie(HttpServletRequest request) {
+
+    private String extractEmailFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
-            return false;
+            return null;
         }
         String name = properties.getSession().getCookieName();
         for (Cookie cookie : cookies) {
             if (name.equals(cookie.getName()) && cookie.getValue() != null && !cookie.getValue().isBlank()) {
-                return true;
+                return jwtUtil.validateAndGetEmail(cookie.getValue());
             }
         }
-        return false;
+        return null;
     }
 }

@@ -17,6 +17,14 @@ public class PortalProperties {
     private Session session = new Session();
     private Demo demo = new Demo();
     private Seller seller = new Seller();
+    private Jwt jwt = new Jwt();
+    public Jwt getJwt() {
+        return jwt;
+    }
+
+    public void setJwt(Jwt jwt) {
+        this.jwt = jwt;
+    }
 
     public Cors getCors() {
         return cors;
@@ -48,6 +56,30 @@ public class PortalProperties {
 
     public void setSeller(Seller seller) {
         this.seller = seller;
+    }
+
+
+    public static class Jwt {
+        /** Secret key used to sign tokens. Must be at least 256 bits (32+ characters). */
+        private String secret = "change-this-to-a-long-random-secret-key-in-env";
+        /** How long an access token stays valid. */
+        private int expirySeconds = 60 * 60; // 1 hour
+
+        public String getSecret() {
+            return secret;
+        }
+
+        public void setSecret(String secret) {
+            this.secret = secret;
+        }
+
+        public int getExpirySeconds() {
+            return expirySeconds;
+        }
+
+        public void setExpirySeconds(int expirySeconds) {
+            this.expirySeconds = expirySeconds;
+        }
     }
 
     /** Which browser origins may call this API with cookies. */
