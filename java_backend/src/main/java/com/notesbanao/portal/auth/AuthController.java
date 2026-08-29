@@ -1,5 +1,7 @@
 package com.notesbanao.portal.auth;
 
+import com.notesbanao.portal.entity.UserEntity;
+import com.notesbanao.portal.repository.UserService;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.notesbanao.portal.auth.dto.AuthResponse;
@@ -24,10 +26,12 @@ public class AuthController implements AuthApi {
 
     private final AuthService authService;
     private final SessionService sessionService;
+    private final UserService userService;
 
-    public AuthController(AuthService authService, SessionService sessionService) {
+    public AuthController(AuthService authService, SessionService sessionService, UserService userService) {
         this.authService = authService;
         this.sessionService = sessionService;
+        this.userService = userService;
     }
 
     @Override
@@ -41,6 +45,10 @@ public class AuthController implements AuthApi {
     public AuthResponse signup(SignupRequest request, HttpServletResponse response) {
         UserDto user = authService.signUp(request);
         sessionService.startSession(response, user.email());
+        UserEntity userEntity = new UserEntity();
+        userEntity.setEmail(request.email());
+        userEntity.setPassword(request.password());
+        userService.save(userEntity);
         return new AuthResponse(true, user, null, false);
     }
 

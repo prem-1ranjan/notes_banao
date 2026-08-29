@@ -16,4 +16,5 @@ public record UserDto(
         boolean phone_verified,
         String status,
         boolean terms_accepted_current) {
+
 }
