@@ -1,4 +1,6 @@
 package com.notesbanao.portal.repository;
 
-public record UserSaveRequest(String email, String password) {
+import java.time.LocalDate;
+
+public record UserSaveRequest(String email, String password, String lastName, String firstName, LocalDate dateOfBirth) {
 }

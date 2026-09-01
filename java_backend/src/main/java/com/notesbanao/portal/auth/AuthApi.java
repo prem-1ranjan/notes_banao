@@ -1,5 +1,6 @@
 package com.notesbanao.portal.auth;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,7 +36,7 @@ public interface AuthApi {
     AuthResponse login(@RequestBody LoginRequest request, HttpServletResponse response);
 
     @PostMapping("/signup")
-    AuthResponse signup(@RequestBody SignupRequest request, HttpServletResponse response);
+    AuthResponse signup(@Valid @RequestBody SignupRequest request, HttpServletResponse response);
 
     @PostMapping("/logout")
     SimpleResponse logout(HttpServletResponse response);

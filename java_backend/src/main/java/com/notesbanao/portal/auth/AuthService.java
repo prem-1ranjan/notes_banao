@@ -58,29 +58,13 @@ public class AuthService {
             throw ApiException.badRequest("Signup request is required.");
         }
 
-        if (!Boolean.TRUE.equals(request.accepted_terms())) {
-            throw ApiException.badRequest(
-                    "Please accept the Terms and Privacy Policy to create an account."
-            );
-        }
-
         String email = value(request.email()).toLowerCase();
-
-        if (!email.contains("@")) {
-            throw ApiException.badRequest("Enter a valid email address.");
-        }
 
         String password = request.password();
 
-        if (password == null || password.length() < MINIMUM_PASSWORD_LENGTH) {
-            throw ApiException.badRequest(
-                    "Password must be at least " + MINIMUM_PASSWORD_LENGTH + " characters."
-            );
-        }
-
         // Save user in database
         userService.saveFromRequest(
-                new UserSaveRequest(email, password)
+                new UserSaveRequest(email, password, request.lastName(), request.firstName(), request.dateOfBirth())
         );
 
         // Update current user information
