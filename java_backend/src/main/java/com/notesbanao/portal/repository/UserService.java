@@ -27,9 +27,15 @@ public class UserService {
     }
     public void saveFromRequest(UserSaveRequest request) {
         UserEntity user = new UserEntity();
-        user.setId(java.util.UUID.randomUUID().toString());
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setDateOfBirth(request.dateOfBirth());
+
+        System.out.println("DOB from request = " + request.dateOfBirth());
+        System.out.println("DOB in entity    = " + user.getDateOfBirth());
+
         userRepository.save(user);
     }
 }

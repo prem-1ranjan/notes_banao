@@ -1,11 +1,10 @@
 package com.notesbanao.portal.auth.dto;
 
 // accepted_terms must be true, or the request is rejected.
-import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.*;
+
+import java.time.LocalDate;
 
 /**
  * Signup request.
@@ -16,6 +15,19 @@ public record SignupRequest(
         @NotBlank(message = "Email is required")
         @Email(message = "Invalid email format")
         String email,
+
+        @NotBlank
+        @Size(min = 2, max = 20)
+        String lastName,
+
+        @NotBlank
+        @Size(min = 2, max = 20)
+        String firstName,
+
+        @NotNull(message = "Date of birth is required")
+        @Past(message = "Date of birth must be in the past")
+        @JsonFormat(pattern = "yyyy-MM-dd")
+        LocalDate dateOfBirth,
 
         @NotBlank(message = "Password is required")
         @Size(
