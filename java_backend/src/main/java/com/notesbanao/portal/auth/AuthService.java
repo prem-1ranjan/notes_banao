@@ -98,17 +98,64 @@ public class AuthService {
      * which is what the profile screen reacts to.
      */
     public String changePassword(UserDto user, PasswordChangeRequest request) {
-        String newPassword = request == null || request.new_password() == null ? "" : request.new_password();
-        if (newPassword.length() < MINIMUM_PASSWORD_LENGTH) {
-            throw ApiException.badRequest("New password must be at least " + MINIMUM_PASSWORD_LENGTH + " characters.");
-        }
-        if (user.has_password() && value(request.current_password()).isEmpty()) {
-            throw ApiException.badRequest("Enter your current password.");
+
+        if (request == null) {
+            throw ApiException.badRequest("Password change request is required.");
         }
 
-        boolean wasSet = user.has_password();
+        String currentPassword = value(request.current_password());
+        String newPassword = value(request.new_password());
+
+        if (newPassword.length() < MINIMUM_PASSWORD_LENGTH) {
+            throw ApiException.badRequest(
+                    "New password must be at least "
+                            + MINIMUM_PASSWORD_LENGTH
+                            + " characters."
+            );
+        }
+
+        if (currentPassword.isEmpty()) {
+            throw ApiException.badRequest(
+                    "Enter your current password."
+            );
+        }
+
+        // Get the actual user from the database
+        UserEntity userEntity = userService.findByEmail(user.email());
+
+        if (userEntity == null) {
+            throw ApiException.notLoggedIn();
+        }
+
+        // Verify current password
+        if (!passwordEncoder.matches(
+                currentPassword,
+                userEntity.getPassword())) {
+
+            throw ApiException.badRequest(
+                    "Current password is incorrect."
+            );
+        }
+
+        // Prevent setting the same password again
+        if (passwordEncoder.matches(
+                newPassword,
+                userEntity.getPassword())) {
+
+            throw ApiException.badRequest(
+                    "New password must be different from your current password."
+            );
+        }
+
+        // Save the new hashed password
+        userService.updatePassword(
+                userEntity.getId(),
+                newPassword
+        );
+
         store.setHasPassword(true);
-        return wasSet ? "Password changed." : "Password set.";
+
+        return "Password changed.";
     }
 
     public void startPasswordReset(String email) {
