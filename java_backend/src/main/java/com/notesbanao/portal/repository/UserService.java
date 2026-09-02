@@ -25,6 +25,9 @@ public class UserService {
         userRepository.save(userEntity);
 
     }
+    public UserEntity findByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
+    }
     public void saveFromRequest(UserSaveRequest request) {
         UserEntity user = new UserEntity();
         user.setEmail(request.email());
@@ -33,8 +36,7 @@ public class UserService {
         user.setLastName(request.lastName());
         user.setDateOfBirth(request.dateOfBirth());
 
-        System.out.println("DOB from request = " + request.dateOfBirth());
-        System.out.println("DOB in entity    = " + user.getDateOfBirth());
+
 
         userRepository.save(user);
     }

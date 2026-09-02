@@ -1,5 +1,7 @@
 package com.notesbanao.portal.auth;
 
+import com.notesbanao.portal.entity.UserEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.notesbanao.portal.auth.dto.LoginRequest;
@@ -10,6 +12,8 @@ import com.notesbanao.portal.common.ApiException;
 import com.notesbanao.portal.store.DemoDataStore;
 import com.notesbanao.portal.repository.UserSaveRequest;
 import com.notesbanao.portal.repository.UserService;
+
+
 
 /**
  * Account rules.
@@ -25,15 +29,17 @@ public class AuthService {
 
     private final DemoDataStore store;
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthService(DemoDataStore store,UserService userService) {
+    public AuthService(DemoDataStore store, UserService userService, PasswordEncoder passwordEncoder) {
         this.store = store;
         this.userService=userService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /** Any email and any long-enough password are accepted in this build. */
     public UserDto signIn(LoginRequest request) {
-        String email = value(request == null ? null : request.email());
+        String email = value(request == null ? null : request.email()).toLowerCase();
         String password = request == null || request.password() == null ? "" : request.password();
 
         if (!email.contains("@")) {
@@ -41,10 +47,22 @@ public class AuthService {
         }
         if (password.length() < MINIMUM_PASSWORD_LENGTH) {
             throw ApiException.badRequest("Password must be at least " + MINIMUM_PASSWORD_LENGTH
-                    + " characters. In this build any password of that length works.");
+                    + " characters.");
+        }
+        // Find user in database
+        UserEntity user = userService.findByEmail(email);
+
+        if (user == null) {
+            throw ApiException.badRequest("Invalid email or password.");
+        }
+
+        // Compare entered password with hashed password from database
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw ApiException.badRequest("Invalid email or password.");
         }
 
         store.setEmail(email.toLowerCase());
+        store.setHasPassword(true);
         return store.user();
     }
 

@@ -1,5 +1,7 @@
 package com.notesbanao.portal.auth;
 
+import com.notesbanao.portal.entity.UserEntity;
+import com.notesbanao.portal.repository.UserService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
@@ -28,22 +30,40 @@ public class SessionService {
     private final PortalProperties properties;
     private final DemoDataStore store;
     private final JwtUtil jwtUtil;
+    private final UserService userService;
 
-
-    public SessionService(PortalProperties properties, DemoDataStore store,JwtUtil jwtUtil) {
+    public SessionService(PortalProperties properties, DemoDataStore store,JwtUtil jwtUtil,UserService userService) {
         this.properties = properties;
         this.store = store;
         this.jwtUtil = jwtUtil;
+        this.userService = userService;
     }
 
     /** The signed-in user, or null when there is no session cookie. */
     public UserDto currentUser(HttpServletRequest request) {
+
         String email = extractEmailFromCookie(request);
 
         if (email == null) {
             return null;
         }
-        return store.user();
+
+        UserEntity user = userService.findByEmail(email);
+
+        if (user == null) {
+            return null;
+        }
+
+        return new UserDto(
+                String.valueOf(user.getId()),
+                user.getEmail(),
+                false,
+                user.getPassword() != null && !user.getPassword().isBlank(),
+                null,
+                false,
+                "active",
+                false
+        );
     }
 
     /** The signed-in user, or a 401 that the front end turns into a redirect. */
