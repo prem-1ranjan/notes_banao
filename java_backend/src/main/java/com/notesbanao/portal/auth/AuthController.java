@@ -1,5 +1,6 @@
 package com.notesbanao.portal.auth;
 
+import com.notesbanao.portal.auth.dto.ChangePhoneRequest;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.notesbanao.portal.auth.dto.AuthResponse;
@@ -82,5 +83,17 @@ public class AuthController implements AuthApi {
         sessionService.requireUser(request);
         authService.acceptTerms();
         return SimpleResponse.success();
+    }
+
+    @Override
+    public SimpleResponse changePhone(
+            ChangePhoneRequest request,
+            HttpServletRequest http) {
+
+        UserDto user = sessionService.requireUser(http);
+
+        authService.changePhone(user, request);
+
+        return SimpleResponse.success("Phone number updated.");
     }
 }

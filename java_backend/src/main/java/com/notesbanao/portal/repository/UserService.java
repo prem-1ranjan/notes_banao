@@ -2,7 +2,6 @@ package com.notesbanao.portal.repository;
 
 import com.notesbanao.portal.common.ApiException;
 import com.notesbanao.portal.entity.UserEntity;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -39,6 +38,7 @@ public class UserService {
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
         user.setDateOfBirth(request.dateOfBirth());
+        user.setPhone(request.phone());
 
         userRepository.save(user);
     }
@@ -49,6 +49,20 @@ public class UserService {
                 .orElseThrow(() -> ApiException.notLoggedIn());
 
         user.setPassword(passwordEncoder.encode(newPassword));
+
+        userRepository.save(user);
+    }
+
+    public void updatePhone(String email, String phone) {
+
+        UserEntity user = userRepository.findByEmail(email).orElse(null);
+
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+
+        user.setPhone(phone);
+        user.setPhoneVerified(true);
 
         userRepository.save(user);
     }

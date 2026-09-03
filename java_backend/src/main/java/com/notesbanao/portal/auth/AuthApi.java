@@ -1,5 +1,6 @@
 package com.notesbanao.portal.auth;
 
+import com.notesbanao.portal.auth.dto.ChangePhoneRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -60,4 +61,11 @@ public interface AuthApi {
 
     @PostMapping("/terms/accept")
     SimpleResponse acceptTerms(HttpServletRequest request);
+
+
+
+    @PostMapping("/auth/change-phone")
+    SimpleResponse changePhone(
+            @RequestBody ChangePhoneRequest request,
+            HttpServletRequest http);
 }

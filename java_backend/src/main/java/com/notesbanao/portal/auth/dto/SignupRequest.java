@@ -45,7 +45,10 @@ public record SignupRequest(
         Boolean accepted_terms,
 
         @Email(message = "Invalid referral email format")
-        String referral_email
+        String referral_email,
+
+        @Size(min = 10, max = 10, message = "Invalid Phone number")
+        String phone
 
 ) {
 }

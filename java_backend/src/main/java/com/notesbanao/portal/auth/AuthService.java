@@ -1,5 +1,6 @@
 package com.notesbanao.portal.auth;
 
+import com.notesbanao.portal.auth.dto.ChangePhoneRequest;
 import com.notesbanao.portal.entity.UserEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -82,7 +83,7 @@ public class AuthService {
 
         // Save user in database
         userService.saveFromRequest(
-                new UserSaveRequest(email, password, request.lastName(), request.firstName(), request.dateOfBirth())
+                new UserSaveRequest(email, password, request.lastName(), request.firstName(), request.dateOfBirth(), request.phone())
         );
 
         // Update current user information
@@ -180,5 +181,17 @@ public class AuthService {
 
     private static String value(String raw) {
         return raw == null ? "" : raw.trim();
+    }
+
+
+    public void changePhone(UserDto user, ChangePhoneRequest request) {
+
+        if (request == null || request.phone() == null) {
+            throw ApiException.badRequest("Phone number is required.");
+        }
+
+        String phone = request.phone();
+
+        userService.updatePhone(user.email(), phone);
     }
 }

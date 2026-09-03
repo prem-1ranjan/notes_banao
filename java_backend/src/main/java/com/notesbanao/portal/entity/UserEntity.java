@@ -17,6 +17,24 @@ public class UserEntity {
 
     private String password;
     private String lastName;
+    private String phone;
+    private boolean phoneVerified;
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public boolean isPhoneVerified() {
+        return phoneVerified;
+    }
+
+    public void setPhoneVerified(boolean phoneVerified) {
+        this.phoneVerified = phoneVerified;
+    }
 
     public String getLastName() {
         return lastName;
