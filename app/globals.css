@@ -1446,23 +1446,28 @@ textarea {
   inset: 0;
   z-index: 30;
   display: grid;
-  align-items: start;
+  align-items: center;
   justify-items: center;
-  overflow-y: auto;
-  padding: clamp(34px, 8vh, 72px) 22px 22px;
+  overflow: hidden;
+  padding: 16px 22px;
   background: rgba(23, 21, 47, 0.46);
 }
 
 .auth-modal-panel {
   position: relative;
   width: min(460px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .auth-modal-panel .panel {
-  min-height: 470px;
   display: grid;
   align-content: start;
   padding-top: 66px;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .auth-modal-close {
@@ -1470,6 +1475,7 @@ textarea {
   top: 16px;
   right: 16px;
   z-index: 2;
+  flex-shrink: 0;
 }
 
 .landing-band {
@@ -4703,11 +4709,29 @@ textarea {
   }
 
   .auth-modal {
-    padding: 14px;
+    align-items: center;
+    justify-items: center;
+    overflow: hidden;
+    padding: 10px;
+  }
+
+  .auth-modal-panel {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 20px);
   }
 
   .auth-modal-panel .panel {
     min-height: 0;
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 58px 16px 20px;
+  }
+
+  .auth-modal-close {
+    top: 10px;
+    right: 10px;
   }
 
   .landing-band {

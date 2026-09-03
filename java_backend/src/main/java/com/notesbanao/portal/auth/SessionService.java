@@ -62,7 +62,7 @@ public class SessionService {
                 null,
                 false,
                 "active",
-                false
+                store.user().terms_accepted_current()
         );
     }
 

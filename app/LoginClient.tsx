@@ -65,34 +65,61 @@ export function LoginClient({ initialMode = "login" }: { initialMode?: Mode }) {
 
   async function submitSignup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     const form = new FormData(event.currentTarget);
+
+    const password = String(form.get("password") || "");
+    const confirmPassword = String(form.get("confirmPassword") || "");
+
+    if (password !== confirmPassword) {
+      setError(true);
+      setMessage("Passwords do not match.");
+      return;
+    }
+
     if (form.get("accepted_terms") !== "yes") {
       setError(true);
       setMessage("Please accept the Terms and Privacy Policy to create an account.");
       return;
     }
+
     setBusy(true);
     setError(false);
     setMessage("Creating account...");
+
     try {
       const email = String(form.get("email") || "");
-      const referralEmail = String(form.get("referral_email") || search.get("ref") || search.get("referral") || "").trim();
+      const referralEmail = String(
+          form.get("referral_email") ||
+          search.get("ref") ||
+          search.get("referral") ||
+          ""
+      ).trim();
+
       const data = await postJson("/api/auth/signup", {
+        firstName: String(form.get("firstName") || ""),
+        lastName: String(form.get("lastName") || ""),
         email,
-        password: String(form.get("password") || ""),
+        dateOfBirth: String(form.get("dateOfBirth") || ""),
+        password,
         accepted_terms: true,
         referral_email: referralEmail || undefined
       });
+
       if (data.needsEmailVerification) {
         setVerificationEmail(email);
         setMode("verify");
         setMessage("");
         return;
       }
+
       window.location.assign("/dashboard?signup=1");
+
     } catch (err) {
       setError(true);
-      setMessage(err instanceof Error ? err.message : "Signup failed.");
+      setMessage(
+          err instanceof Error ? err.message : "Signup failed."
+      );
     } finally {
       setBusy(false);
     }
@@ -167,94 +194,335 @@ export function LoginClient({ initialMode = "login" }: { initialMode?: Mode }) {
   }
 
   return (
-    <section className="panel">
-      <div className="auth-heading">
-        <p className="eyebrow">Account Access</p>
-        <h2>{headingForMode(mode)}</h2>
-        <p className="panel-intro">{introForMode(mode)}</p>
-      </div>
-
-      {mode === "login" ? (
-        <form method="post" className="form" onSubmit={submitLogin}>
-          <label>Email<input name="email" type="email" autoComplete="email" required /></label>
-          <label>Password<input name="password" type="password" autoComplete="current-password" required /></label>
-          <div className="form-help">
-            <button className="inline-link" type="button" onClick={() => switchMode("forgot")}>Forgot password?</button>
-          </div>
-          <button className="primary" disabled={busy} type="submit">Sign in</button>
-        </form>
-      ) : mode === "signup" ? (
-        <form method="post" className="form" onSubmit={submitSignup}>
-          <label>Email<input name="email" type="email" autoComplete="email" required /></label>
-          <label>Password<input name="password" type="password" autoComplete="new-password" minLength={8} required /></label>
-          <label>Referral email<input name="referral_email" type="email" autoComplete="email" defaultValue={search.get("ref") || search.get("referral") || ""} placeholder="Optional" /></label>
-          <label className="terms-checkbox">
-            <input
-              checked={signupTermsAccepted}
-              name="accepted_terms"
-              onChange={(event) => setSignupTermsAccepted(event.currentTarget.checked)}
-              type="checkbox"
-              value="yes"
-              required
-            />
-            <span>
-              I agree to the <a href="/terms-and-conditions" target="_blank" rel="noreferrer">Terms & Conditions</a> and <a href="/privacy-policy" target="_blank" rel="noreferrer">Privacy Policy</a>.
-            </span>
-          </label>
-          <button className="primary" disabled={busy || !signupTermsAccepted} type="submit">Create account</button>
-        </form>
-      ) : mode === "verify" ? (
-        <div className="verify-notice" role="status">
-          <div className="verify-icon" aria-hidden="true">OK</div>
-          <h3>Check your email</h3>
-          <p>
-            We sent a verification link{verificationEmail ? ` to ${verificationEmail}` : ""}.
-            Verify your account, then sign in to continue.
-          </p>
-          <button className="primary" disabled={busy} type="button" onClick={() => switchMode("login")}>Back to sign in</button>
-          <button className="ghost" disabled={busy} type="button" onClick={() => switchMode("signup")}>Use a different email</button>
+      <section className="panel">
+        <div className="auth-heading">
+          <p className="eyebrow">Account Access</p>
+          <h2>{headingForMode(mode)}</h2>
+          <p className="panel-intro">{introForMode(mode)}</p>
         </div>
-      ) : mode === "terms" ? (
-        <form method="post" className="form" onSubmit={submitTerms}>
-          <label className="terms-checkbox">
-            <input
-              checked={portalTermsAccepted}
-              name="accepted"
-              onChange={(event) => setPortalTermsAccepted(event.currentTarget.checked)}
-              type="checkbox"
-              value="yes"
-              required
-            />
-            <span>
-              I agree to the <a href="/terms-and-conditions" target="_blank" rel="noreferrer">Terms & Conditions</a> and <a href="/privacy-policy" target="_blank" rel="noreferrer">Privacy Policy</a>.
-            </span>
-          </label>
-          <button className="primary" disabled={busy || !portalTermsAccepted} type="submit">Continue to portal</button>
-        </form>
-      ) : (
-        <form method="post" className="form" onSubmit={submitForgotPassword}>
-          <label>Email<input name="email" type="email" autoComplete="email" required /></label>
-          <button className="primary" disabled={busy} type="submit">Send reset link</button>
-          <button className="ghost" disabled={busy} type="button" onClick={() => switchMode("login")}>Back to sign in</button>
-        </form>
-      )}
 
-      {mode !== "forgot" && mode !== "terms" && mode !== "verify" ? (
-        <>
-          <div className="form-divider"><span>or</span></div>
-          <button className="secondary wide" disabled={busy} type="button" onClick={startGoogle}>Continue with Google</button>
-        </>
-      ) : null}
-      {mode !== "forgot" && mode !== "terms" && mode !== "verify" ? (
-        <p className="auth-switch">
-          {mode === "login" ? "New to NotesBanao?" : "Already have an account?"}
-          <button type="button" onClick={() => switchMode(mode === "login" ? "signup" : "login")}>
-            {mode === "login" ? "Create an account" : "Sign in"}
-          </button>
+        {mode === "login" ? (
+            <form method="post" className="form" onSubmit={submitLogin}>
+              <label>
+                Email
+                <input
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                />
+              </label>
+
+              <label>
+                Password
+                <input
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                />
+              </label>
+
+              <div className="form-help">
+                <button
+                    className="inline-link"
+                    type="button"
+                    onClick={() => switchMode("forgot")}
+                >
+                  Forgot password?
+                </button>
+              </div>
+
+              <button className="primary" disabled={busy} type="submit">
+                Sign in
+              </button>
+            </form>
+
+        ) : mode === "signup" ? (
+
+            <form method="post" className="form" onSubmit={submitSignup}>
+
+              <label>
+                First Name
+                <input
+                    name="firstName"
+                    type="text"
+                    autoComplete="given-name"
+                    minLength={2}
+                    maxLength={20}
+                    required
+                />
+              </label>
+
+              <label>
+                Last Name
+                <input
+                    name="lastName"
+                    type="text"
+                    autoComplete="family-name"
+                    minLength={2}
+                    maxLength={20}
+                    required
+                />
+              </label>
+
+              <label>
+                Email
+                <input
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                />
+              </label>
+
+              <label>
+                Date of Birth
+                <input
+                    name="dateOfBirth"
+                    type="date"
+                    required
+                />
+              </label>
+
+              <label>
+                Password
+                <input
+                    name="password"
+                    type="password"
+                    autoComplete="new-password"
+                    minLength={8}
+                    maxLength={64}
+                    required
+                />
+              </label>
+
+              <label>
+                Confirm Password
+                <input
+                    name="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    minLength={8}
+                    maxLength={64}
+                    required
+                />
+              </label>
+
+              <label>
+                Referral Email
+                <input
+                    name="referral_email"
+                    type="email"
+                    autoComplete="email"
+                    defaultValue={
+                        search.get("ref") ||
+                        search.get("referral") ||
+                        ""
+                    }
+                    placeholder="Optional"
+                />
+              </label>
+
+              <label className="terms-checkbox">
+                <input
+                    checked={signupTermsAccepted}
+                    name="accepted_terms"
+                    onChange={(event) =>
+                        setSignupTermsAccepted(event.currentTarget.checked)
+                    }
+                    type="checkbox"
+                    value="yes"
+                    required
+                />
+
+                <span>
+            I agree to the{" "}
+                  <a
+                      href="/terms-and-conditions"
+                      target="_blank"
+                      rel="noreferrer"
+                  >
+              Terms & Conditions
+            </a>{" "}
+                  and{" "}
+                  <a
+                      href="/privacy-policy"
+                      target="_blank"
+                      rel="noreferrer"
+                  >
+              Privacy Policy
+            </a>
+            .
+          </span>
+              </label>
+
+              <button
+                  className="primary"
+                  disabled={busy || !signupTermsAccepted}
+                  type="submit"
+              >
+                Create account
+              </button>
+
+            </form>
+
+        ) : mode === "verify" ? (
+
+            <div className="verify-notice" role="status">
+              <div className="verify-icon" aria-hidden="true">
+                OK
+              </div>
+
+              <h3>Check your email</h3>
+
+              <p>
+                We sent a verification link
+                {verificationEmail ? ` to ${verificationEmail}` : ""}.
+                Verify your account, then sign in to continue.
+              </p>
+
+              <button
+                  className="primary"
+                  disabled={busy}
+                  type="button"
+                  onClick={() => switchMode("login")}
+              >
+                Back to sign in
+              </button>
+
+              <button
+                  className="ghost"
+                  disabled={busy}
+                  type="button"
+                  onClick={() => switchMode("signup")}
+              >
+                Use a different email
+              </button>
+            </div>
+
+        ) : mode === "terms" ? (
+
+            <form method="post" className="form" onSubmit={submitTerms}>
+              <label className="terms-checkbox">
+                <input
+                    checked={portalTermsAccepted}
+                    name="accepted"
+                    onChange={(event) =>
+                        setPortalTermsAccepted(event.currentTarget.checked)
+                    }
+                    type="checkbox"
+                    value="yes"
+                    required
+                />
+
+                <span>
+            I agree to the{" "}
+                  <a
+                      href="/terms-and-conditions"
+                      target="_blank"
+                      rel="noreferrer"
+                  >
+              Terms & Conditions
+            </a>{" "}
+                  and{" "}
+                  <a
+                      href="/privacy-policy"
+                      target="_blank"
+                      rel="noreferrer"
+                  >
+              Privacy Policy
+            </a>
+            .
+          </span>
+              </label>
+
+              <button
+                  className="primary"
+                  disabled={busy || !portalTermsAccepted}
+                  type="submit"
+              >
+                Continue to portal
+              </button>
+            </form>
+
+        ) : (
+
+            <form method="post" className="form" onSubmit={submitForgotPassword}>
+              <label>
+                Email
+                <input
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                />
+              </label>
+
+              <button className="primary" disabled={busy} type="submit">
+                Send reset link
+              </button>
+
+              <button
+                  className="ghost"
+                  disabled={busy}
+                  type="button"
+                  onClick={() => switchMode("login")}
+              >
+                Back to sign in
+              </button>
+            </form>
+        )}
+
+        {mode !== "forgot" &&
+        mode !== "terms" &&
+        mode !== "verify" ? (
+            <>
+              <div className="form-divider">
+                <span>or</span>
+              </div>
+
+              <button
+                  className="secondary wide"
+                  disabled={busy}
+                  type="button"
+                  onClick={startGoogle}
+              >
+                Continue with Google
+              </button>
+            </>
+        ) : null}
+
+        {mode !== "forgot" &&
+        mode !== "terms" &&
+        mode !== "verify" ? (
+            <p className="auth-switch">
+              {mode === "login"
+                  ? "New to NotesBanao?"
+                  : "Already have an account?"}
+
+              <button
+                  type="button"
+                  onClick={() =>
+                      switchMode(mode === "login" ? "signup" : "login")
+                  }
+              >
+                {mode === "login"
+                    ? "Create an account"
+                    : "Sign in"}
+              </button>
+            </p>
+        ) : null}
+
+        <p
+            className={`message ${
+                error ? "error" : message ? "success" : ""
+            }`}
+            role="status"
+        >
+          {message}
         </p>
-      ) : null}
-      <p className={`message ${error ? "error" : message ? "success" : ""}`} role="status">{message}</p>
-    </section>
+      </section>
   );
 }
 
