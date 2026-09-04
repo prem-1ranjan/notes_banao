@@ -64,7 +64,7 @@ public interface AuthApi {
 
 
 
-    @PostMapping("/auth/change-phone")
+    @PostMapping("/change-phone")
     SimpleResponse changePhone(
             @RequestBody ChangePhoneRequest request,
             HttpServletRequest http);
