@@ -12,6 +12,20 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
+
+    @Column(name = "balance_points", nullable = false)
+    private int balancePoints = 0;
+
+    public int getBalancePoints() {
+        return balancePoints;
+    }
+
+    public void setBalancePoints(int balancePoints) {
+        this.balancePoints = balancePoints;
+    }
+
+
     @Column(unique = true, nullable = false)
     private String email;
 

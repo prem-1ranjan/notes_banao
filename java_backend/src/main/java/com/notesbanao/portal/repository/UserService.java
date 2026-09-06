@@ -23,7 +23,7 @@ public class UserService {
         return userRepository.findByEmail(email).orElse(null);
     }
 
-    public void saveFromRequest(UserSaveRequest request) {
+    public UserEntity saveFromRequest(UserSaveRequest request) {
 
         String email = request.email().trim().toLowerCase();
 
@@ -40,7 +40,8 @@ public class UserService {
         user.setDateOfBirth(request.dateOfBirth());
         user.setPhone(request.phone());
 
-        userRepository.save(user);
+
+       return userRepository.save(user);
     }
 
     public void updatePassword(Long userId, String newPassword) {
@@ -50,6 +51,14 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(newPassword));
 
+        userRepository.save(user);
+    }
+
+    public void addPoints(Long userId, int points) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.badRequest("User not found."));
+
+        user.setBalancePoints(user.getBalancePoints() + points);
         userRepository.save(user);
     }
 

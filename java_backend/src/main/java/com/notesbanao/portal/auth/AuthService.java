@@ -13,7 +13,9 @@ import com.notesbanao.portal.common.ApiException;
 import com.notesbanao.portal.store.DemoDataStore;
 import com.notesbanao.portal.repository.UserSaveRequest;
 import com.notesbanao.portal.repository.UserService;
-
+import com.notesbanao.portal.entity.ReferralEntity;
+import com.notesbanao.portal.repository.ReferralService;
+import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -31,11 +33,14 @@ public class AuthService {
     private final DemoDataStore store;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final ReferralService referralService;
 
-    public AuthService(DemoDataStore store, UserService userService, PasswordEncoder passwordEncoder) {
+    public AuthService(DemoDataStore store, UserService userService, PasswordEncoder passwordEncoder, ReferralService referralService) {
         this.store = store;
         this.userService=userService;
         this.passwordEncoder = passwordEncoder;
+        this.referralService = referralService;
+
     }
 
     /** Any email and any long-enough password are accepted in this build. */
@@ -71,6 +76,8 @@ public class AuthService {
      * The real portal emails a verification link and makes the user come back.
      * Here the account is created and signed in straight away.
      */
+
+    @Transactional
     public UserDto signUp(SignupRequest request) {
 
         if (request == null) {
@@ -78,20 +85,43 @@ public class AuthService {
         }
 
         String email = value(request.email()).toLowerCase();
-
         String password = request.password();
 
         // Save user in database
-        userService.saveFromRequest(
-                new UserSaveRequest(email, password, request.lastName(), request.firstName(), request.dateOfBirth(), request.phone())
+        UserEntity newUser = userService.saveFromRequest(
+                new UserSaveRequest(
+                        email,
+                        password,
+                        request.lastName(),
+                        request.firstName(),
+                        request.dateOfBirth(),
+                        request.phone())
         );
 
-        // Update current user information
-        store.setEmail(email);
-        store.setHasPassword(true);
-        store.acceptTerms();
+        // Complete referral if signup came through referral link
+        String referralToken = value(request.referral_token());
+        
 
-        return store.user();
+
+
+
+
+        return toUserDto(newUser);
+
+    }
+
+    private UserDto toUserDto(UserEntity user) {
+
+        return new UserDto(
+                String.valueOf(user.getId()),
+                user.getEmail(),
+                false,
+                user.getPassword() != null && !user.getPassword().isBlank(),
+                user.getPhone(),
+                user.isPhoneVerified(),
+                "active",
+                true
+        );
     }
 
     /**

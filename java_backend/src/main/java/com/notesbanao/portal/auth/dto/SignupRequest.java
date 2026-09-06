@@ -44,8 +44,8 @@ public record SignupRequest(
         @AssertTrue(message = "You must accept the terms and conditions")
         Boolean accepted_terms,
 
-        @Email(message = "Invalid referral email format")
-        String referral_email,
+
+        String referral_token,
 
         @Size(min = 10, max = 10, message = "Invalid Phone number")
         String phone
