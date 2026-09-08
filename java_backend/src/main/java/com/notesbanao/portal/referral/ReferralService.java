@@ -1,7 +1,9 @@
-package com.notesbanao.portal.repository;
+package com.notesbanao.portal.referral;
 
 import com.notesbanao.portal.common.ApiException;
 import com.notesbanao.portal.entity.ReferralEntity;
+import com.notesbanao.portal.entity.UserEntity;
+import com.notesbanao.portal.repository.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +53,11 @@ public class ReferralService {
                         ));
     }
 
-
+    public String getReferrerEmail(String token){
+        ReferralEntity referral = findByToken(token);
+        UserEntity referrer = userService.findById(referral.getReferrerUserId());
+        return referrer.getEmail();
+    }
 
     @Transactional
     public void completeReferral(String token, String signupEmail) {

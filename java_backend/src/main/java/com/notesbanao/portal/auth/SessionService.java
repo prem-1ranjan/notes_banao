@@ -81,8 +81,15 @@ public class SessionService {
     }
 
     public void startSession(HttpServletResponse response, String email) {
+        System.out.println("START SESSION CALLED FOR = " + email);
+
         String token = jwtUtil.generateToken(email);
+
+        System.out.println("JWT GENERATED = " + (token != null && !token.isBlank()));
+
         write(response, token, properties.getSession().getMaxAgeSeconds());
+
+
     }
 
     public void endSession(HttpServletResponse response) {
@@ -99,6 +106,11 @@ public class SessionService {
                 .sameSite("Lax")
                 .maxAge(maxAgeSeconds)
                 .build();
+
+        System.out.println("SESSION COOKIE = " + cookie.getName());
+        System.out.println("COOKIE SECURE = " + properties.getSession().isSecure());
+        System.out.println("COOKIE MAX AGE = " + maxAgeSeconds);
+
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 //its not verifying any signature,just checks cookie existance and cookie is not empty

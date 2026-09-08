@@ -23,6 +23,11 @@ public class UserService {
         return userRepository.findByEmail(email).orElse(null);
     }
 
+    public UserEntity findById(Long userId){
+        return userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.badRequest("Referrer account not found."));
+    }
+
     public UserEntity saveFromRequest(UserSaveRequest request) {
 
         String email = request.email().trim().toLowerCase();
