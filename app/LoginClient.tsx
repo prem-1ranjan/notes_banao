@@ -89,6 +89,7 @@ export function LoginClient({ initialMode = "login" }: { initialMode?: Mode }) {
 
     try {
       const email = String(form.get("email") || "");
+      const phone = String(form.get("phone") || "").trim();
       const referralEmail = String(
           form.get("referral_email") ||
           search.get("ref") ||
@@ -101,6 +102,7 @@ export function LoginClient({ initialMode = "login" }: { initialMode?: Mode }) {
         lastName: String(form.get("lastName") || ""),
         email,
         dateOfBirth: String(form.get("dateOfBirth") || ""),
+        phone,
         password,
         accepted_terms: true,
         referral_email: referralEmail || undefined
@@ -272,6 +274,20 @@ export function LoginClient({ initialMode = "login" }: { initialMode?: Mode }) {
                     name="email"
                     type="email"
                     autoComplete="email"
+                    required
+                />
+              </label>
+
+              <label>
+                Mobile Number
+                <input
+                    name="phone"
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    maxLength={10}
+                    pattern="[0-9]{10}"
+                    placeholder="Enter 10-digit mobile number"
                     required
                 />
               </label>
