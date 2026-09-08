@@ -2,14 +2,13 @@ package com.notesbanao.portal.auth.dto;
 
 /**
  * The signed-in account, as the front end reads it.
- *
- * Component names are snake_case on purpose: the API contract is snake_case
- * here, and matching it exactly means Jackson needs no annotations and the two
- * cannot drift apart.
  */
 public record UserDto(
         String id,
         String email,
+        String first_name,
+        String last_name,
+        String date_of_birth,
         boolean email_verified,
         boolean has_password,
         String phone_e164,

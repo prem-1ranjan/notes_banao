@@ -298,18 +298,51 @@ public class DemoDataStore {
     /* ------------------------------------------------------------ writes --- */
 
     public synchronized void setEmail(String email) {
-        user = new UserDto(user.id(), email, user.email_verified(), user.has_password(), user.phone_e164(),
-                user.phone_verified(), user.status(), user.terms_accepted_current());
+        user = new UserDto(
+                user.id(),
+                email,
+                user.first_name(),
+                user.last_name(),
+                user.date_of_birth(),
+                user.email_verified(),
+                user.has_password(),
+                user.phone_e164(),
+                user.phone_verified(),
+                user.status(),
+                user.terms_accepted_current()
+        );
     }
 
     public synchronized void setHasPassword(boolean hasPassword) {
-        user = new UserDto(user.id(), user.email(), user.email_verified(), hasPassword, user.phone_e164(),
-                user.phone_verified(), user.status(), user.terms_accepted_current());
+        user = new UserDto(
+                user.id(),
+                user.email(),
+                user.first_name(),
+                user.last_name(),
+                user.date_of_birth(),
+                user.email_verified(),
+                hasPassword,
+                user.phone_e164(),
+                user.phone_verified(),
+                user.status(),
+                user.terms_accepted_current()
+        );
     }
 
     public synchronized void acceptTerms() {
-        user = new UserDto(user.id(), user.email(), user.email_verified(), user.has_password(), user.phone_e164(),
-                user.phone_verified(), user.status(), true);
+        user = new UserDto(
+                user.id(),
+                user.email(),
+                user.first_name(),
+                user.last_name(),
+                user.date_of_birth(),
+                user.email_verified(),
+                user.has_password(),
+                user.phone_e164(),
+                user.phone_verified(),
+                user.status(),
+                true
+        );
     }
 
     public synchronized void creditPoints(int points) {
@@ -374,8 +407,19 @@ public class DemoDataStore {
 
     /** Verify the mobile and credit the trial points, at most once. */
     public synchronized int claimTrial(String phone) {
-        user = new UserDto(user.id(), user.email(), user.email_verified(), user.has_password(), phone, true,
-                user.status(), user.terms_accepted_current());
+        user = new UserDto(
+                user.id(),
+                user.email(),
+                user.first_name(),
+                user.last_name(),
+                user.date_of_birth(),
+                user.email_verified(),
+                user.has_password(),
+                phone,
+                true,
+                user.status(),
+                user.terms_accepted_current()
+        );
         if (trialClaimed) {
             return 0;
         }

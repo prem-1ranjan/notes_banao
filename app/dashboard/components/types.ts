@@ -1,8 +1,13 @@
 export type User = {
+  id: string;
   email: string;
+  first_name: string | null;
+  last_name: string | null;
+  date_of_birth: string | null;
   has_password: boolean;
   phone_e164: string | null;
   phone_verified: boolean;
+  email_verified: boolean;
 };
 
 export type TrialStatus = {

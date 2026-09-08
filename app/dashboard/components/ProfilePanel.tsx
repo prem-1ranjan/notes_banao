@@ -37,6 +37,7 @@ type ProfilePanelProps = {
   onRevokeDeletion: () => Promise<AccountActionResult>;
   onSendOtp: (event: FormEvent<HTMLFormElement>) => Promise<TrialActionResult>;
   onVerifyOtp: (event: FormEvent<HTMLFormElement>) => Promise<TrialActionResult>;
+  onPhoneChange: (phone: string) => void;
 };
 
 export function ProfilePanel({
@@ -50,7 +51,8 @@ export function ProfilePanel({
   onRequestDeletion,
   onRevokeDeletion,
   onSendOtp,
-  onVerifyOtp
+  onVerifyOtp,
+  onPhoneChange
 }: ProfilePanelProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
@@ -67,6 +69,10 @@ export function ProfilePanel({
   const [referralSignupLink, setReferralSignupLink] = useState("");
   const hasPassword = Boolean(user.has_password);
   const phoneVerified = Boolean(user.phone_verified);
+  const [changePhoneOpen, setChangePhoneOpen] = useState(false);
+  const [newPhone, setNewPhone] = useState(user.phone_e164 || "");
+  const [changePhoneLoading, setChangePhoneLoading] = useState(false);
+  const [changePhoneMessage, setChangePhoneMessage] = useState("");
   const trialClaimed = Boolean(trial?.claimed || phoneVerified);
   const referralRewardText = referralReward?.active && referralReward.points_amount > 0
     ? `${referralReward.points_amount.toLocaleString()} NB Points`
@@ -189,6 +195,44 @@ export function ProfilePanel({
     setDeleteError(!result.ok);
     setDeleteMessage(result.ok ? "Deletion request cancelled. Your account is safe." : result.message);
   }
+  const handleChangePhone = async () => {
+    if (!newPhone.trim()) {
+      setChangePhoneMessage("Phone number is required.");
+      return;
+    }
+
+    if (!/^\d{10}$/.test(newPhone.trim())) {
+      setChangePhoneMessage("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
+    try {
+      setChangePhoneLoading(true);
+      setChangePhoneMessage("");
+
+      await apiFetch("/api/auth/change-phone", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user.email,
+          phone: newPhone.trim(),
+        }),
+      });
+      onPhoneChange(newPhone.trim());
+      setChangePhoneMessage("Phone number updated successfully.");
+      setChangePhoneOpen(false);
+    } catch (error) {
+      setChangePhoneMessage(
+          error instanceof Error
+              ? error.message
+              : "Failed to update phone number."
+      );
+    } finally {
+      setChangePhoneLoading(false);
+    }
+  };
 
   return (
     <div className="content-panel profile-panel">
@@ -200,35 +244,140 @@ export function ProfilePanel({
 
       <div className="profile-grid">
         <div className="profile-item">
-          <span>Email</span>
-          <strong>{user.email}</strong>
+          <span>First Name</span>
+          <strong>{user.first_name || "Not available"}</strong>
         </div>
+
+        <div className="profile-item">
+          <span>Last Name</span>
+          <strong>{user.last_name || "Not available"}</strong>
+        </div>
+
+        <div className="profile-item">
+          <span>Email</span>
+          <strong>
+            {user.email}
+            {user.email_verified ? (
+                <span className="verified-mark">
+          <VerifiedTick />
+          Verified
+        </span>
+            ) : (
+                <span className="verification-status">
+          Not verified
+        </span>
+            )}
+          </strong>
+        </div>
+
         <div className="profile-item">
           <span>Mobile number</span>
-          {phoneVerified ? (
-            <strong className="verified-mark">
-              <VerifiedTick />
-              {user.phone_e164 ? `${user.phone_e164} verified` : "Verified"}
-            </strong>
-          ) : (
-            <strong>Not verified</strong>
-          )}
+
+          <strong>
+            {user.phone_e164 || "Not available"}
+
+            {user.phone_verified && (
+                <span className="verified-mark">
+        <VerifiedTick />
+        Verified
+      </span>
+            )}
+          </strong>
+
+          <button
+              type="button"
+              className="change-phone-button"
+              onClick={() => {
+                setNewPhone(user.phone_e164 || "");
+                setChangePhoneMessage("");
+                setChangePhoneOpen(true);
+              }}
+          >
+            Change mobile number
+          </button>
         </div>
-        {/* Nothing left to claim once verified — the row above carries the state,
-            so the whole trial box goes rather than sitting empty. */}
-        {!trialClaimed && (
-        <div className="profile-item profile-trial-item">
-          <TrialClaimControl
-            title="Trial"
-            variant="profile"
-            otpVisible={otpVisible}
-            phoneVerified={phoneVerified}
-            phone={user.phone_e164}
-            trial={trial}
-            onSendOtp={onSendOtp}
-            onVerifyOtp={onVerifyOtp}
-          />
+
+        <div className="profile-item">
+          <span>Date of Birth</span>
+          <strong>
+            {user.date_of_birth
+                ? new Date(`${user.date_of_birth}T00:00:00`).toLocaleDateString("en-IN", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
+                : "Not available"}
+          </strong>
         </div>
+
+        <div className="profile-item">
+          <span>Mobile verification</span>
+
+          <strong className={phoneVerified ? "verified-mark" : ""}>
+            {phoneVerified ? (
+                <>
+                  <VerifiedTick />
+                  Verified
+                </>
+            ) : (
+                "Not verified"
+            )}
+          </strong>
+        </div>
+        {changePhoneOpen && (
+            <div className="profile-item profile-phone-change">
+              <span>New mobile number</span>
+
+              <div>
+                <input
+                    type="tel"
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value)}
+                    maxLength={10}
+                    placeholder="Enter 10-digit mobile number"
+                />
+
+                <div className="phone-change-actions">
+                  <button
+                      type="button"
+                      onClick={handleChangePhone}
+                      disabled={changePhoneLoading}
+                  >
+                    {changePhoneLoading ? "Saving..." : "Save"}
+                  </button>
+
+                  <button
+                      type="button"
+                      onClick={() => {
+                        setChangePhoneOpen(false);
+                        setChangePhoneMessage("");
+                      }}
+                      disabled={changePhoneLoading}
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                {changePhoneMessage && (
+                    <small>{changePhoneMessage}</small>
+                )}
+              </div>
+            </div>
+        )}
+
+        {!phoneVerified && (
+            <div className="profile-item profile-trial-item">
+              <TrialClaimControl
+                  title="Trial"
+                  variant="profile"
+                  otpVisible={otpVisible}
+                  phoneVerified={phoneVerified}
+                  phone={user.phone_e164}
+                  trial={trial}
+                  onSendOtp={onSendOtp}
+                  onVerifyOtp={onVerifyOtp}
+              />
+            </div>
         )}
       </div>
 

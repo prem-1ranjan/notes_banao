@@ -67,9 +67,7 @@ public class AuthService {
             throw ApiException.badRequest("Invalid email or password.");
         }
 
-        store.setEmail(email.toLowerCase());
-        store.setHasPassword(true);
-        return store.user();
+        return toUserDto(user);
     }
 
     /**
@@ -111,10 +109,15 @@ public class AuthService {
     }
 
     private UserDto toUserDto(UserEntity user) {
-
+        System.out.println("PHONE FROM DB = " + user.getPhone());
         return new UserDto(
                 String.valueOf(user.getId()),
                 user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getDateOfBirth() != null
+                        ? user.getDateOfBirth().toString()
+                        : null,
                 false,
                 user.getPassword() != null && !user.getPassword().isBlank(),
                 user.getPhone(),

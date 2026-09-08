@@ -499,6 +499,13 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
       return { ok: false, message: errorMessage };
     }
   }
+  function handlePhoneChange(phone: string) {
+    setUser((currentUser) => ({
+      ...currentUser,
+      phone_e164: phone,
+      phone_verified: false,
+    }));
+  }
 
   async function loadAccountDeletion() {
     try {
@@ -759,6 +766,7 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
               onRevokeDeletion={revokeAccountDeletion}
               onSendOtp={sendOtp}
               onVerifyOtp={verifyOtp}
+              onPhoneChange={handlePhoneChange}
             />
           )}
         </section>

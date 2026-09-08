@@ -57,10 +57,15 @@ public class SessionService {
         return new UserDto(
                 String.valueOf(user.getId()),
                 user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getDateOfBirth() != null
+                        ? user.getDateOfBirth().toString()
+                        : null,
                 false,
                 user.getPassword() != null && !user.getPassword().isBlank(),
-                null,
-                false,
+                user.getPhone(),
+                user.isPhoneVerified(),
                 "active",
                 store.user().terms_accepted_current()
         );
