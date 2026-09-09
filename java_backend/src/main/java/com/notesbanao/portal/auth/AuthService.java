@@ -13,8 +13,7 @@ import com.notesbanao.portal.common.ApiException;
 import com.notesbanao.portal.store.DemoDataStore;
 import com.notesbanao.portal.repository.UserSaveRequest;
 import com.notesbanao.portal.repository.UserService;
-import com.notesbanao.portal.entity.ReferralEntity;
-import com.notesbanao.portal.repository.ReferralService;
+import com.notesbanao.portal.referral.ReferralService;
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -98,11 +97,9 @@ public class AuthService {
 
         // Complete referral if signup came through referral link
         String referralToken = value(request.referral_token());
-        
-
-
-
-
+        if(!referralToken.isEmpty()){
+            referralService.completeReferral(referralToken, newUser.getEmail());
+        }
 
         return toUserDto(newUser);
 

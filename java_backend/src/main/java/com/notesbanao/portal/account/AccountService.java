@@ -10,7 +10,7 @@ import com.notesbanao.portal.account.dto.ReferralInviteResponse;
 import com.notesbanao.portal.auth.dto.UserDto;
 import com.notesbanao.portal.common.ApiException;
 import com.notesbanao.portal.entity.ReferralEntity;
-import com.notesbanao.portal.repository.ReferralService;
+import com.notesbanao.portal.referral.ReferralService;
 import com.notesbanao.portal.store.DemoDataStore;
 
 /** Referrals and account deletion. */

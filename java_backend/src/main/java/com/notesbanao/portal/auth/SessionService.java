@@ -99,6 +99,7 @@ public class SessionService {
                 .sameSite("Lax")
                 .maxAge(maxAgeSeconds)
                 .build();
+
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 //its not verifying any signature,just checks cookie existance and cookie is not empty

@@ -1,4 +1,4 @@
-package com.notesbanao.portal.repository;
+package com.notesbanao.portal.referral;
 
 import com.notesbanao.portal.entity.ReferralEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { apiFetch, postJson } from "@/lib/api-client";
 
@@ -31,6 +31,65 @@ export function LoginClient({ initialMode = "login" }: { initialMode?: Mode }) {
   const [verificationEmail, setVerificationEmail] = useState("");
   const [signupTermsAccepted, setSignupTermsAccepted] = useState(false);
   const [portalTermsAccepted, setPortalTermsAccepted] = useState(false);
+
+  const referralToken = search.get("ref") ||
+                      search.get("referral") ||
+                      "";
+  const [referralEmail, setReferralEmail] = useState("");
+  const [referralLoading, setReferralLoading] = useState(false);
+
+  useEffect(() => {
+    if (!referralToken) {
+        setReferralEmail("");
+        return;
+    }
+
+    let cancelled = false;
+
+    async function loadReferralInfo() {
+        setReferralLoading(true);
+
+        try {
+            const response = await apiFetch(
+                `/api/referrals/info?token=${encodeURIComponent(referralToken)}`
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.valid) {
+                throw new Error(
+                    data.message || "Invalid referral link."
+                );
+            }
+
+            if (!cancelled) {
+                setReferralEmail(
+                    data.referrerEmail || ""
+                );
+            }
+        } catch (err) {
+            if (!cancelled) {
+                setReferralEmail("");
+                setError(true);
+                setMessage(
+                    err instanceof Error
+                        ? err.message
+                        : "Could not load referral information."
+                );
+            }
+        } finally {
+            if (!cancelled) {
+                setReferralLoading(false);
+            }
+        }
+    }
+
+    loadReferralInfo();
+
+    return () => {
+        cancelled = true;
+    };
+}, [referralToken]);
 
   function switchMode(nextMode: Mode) {
     setMode(nextMode);
@@ -90,12 +149,10 @@ export function LoginClient({ initialMode = "login" }: { initialMode?: Mode }) {
     try {
       const email = String(form.get("email") || "");
       const phone = String(form.get("phone") || "").trim();
-      const referralEmail = String(
-          form.get("referral_email") ||
+      const referralToken = 
           search.get("ref") ||
           search.get("referral") ||
-          ""
-      ).trim();
+          "";
 
       const data = await postJson("/api/auth/signup", {
         firstName: String(form.get("firstName") || ""),
@@ -105,7 +162,7 @@ export function LoginClient({ initialMode = "login" }: { initialMode?: Mode }) {
         phone,
         password,
         accepted_terms: true,
-        referral_email: referralEmail || undefined
+        referral_email: referralToken || undefined
       });
 
       if (data.needsEmailVerification) {
@@ -331,12 +388,13 @@ export function LoginClient({ initialMode = "login" }: { initialMode?: Mode }) {
                     name="referral_email"
                     type="email"
                     autoComplete="email"
-                    defaultValue={
-                        search.get("ref") ||
-                        search.get("referral") ||
-                        ""
+                    value={referralEmail}
+                    placeholder={
+                      referralLoading
+                      ? "Loading referrer..."
+                      : "Optional"
                     }
-                    placeholder="Optional"
+                    readOnly
                 />
               </label>
 
