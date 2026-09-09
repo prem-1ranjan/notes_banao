@@ -84,7 +84,7 @@ public class AuthService {
         String email = value(request.email()).toLowerCase();
         String password = request.password();
 
-        // Save user in database
+        // Create User
         UserEntity newUser = userService.saveFromRequest(
                 new UserSaveRequest(
                         email,

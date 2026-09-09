@@ -5,7 +5,7 @@ spring:
   application:
     name: notesbanao-portal-backend
   datasource:
-      url: jdbc:sqlite:notesbanao.db
+      url: jdbc:sqlite:notesbanao.db?busy_timeout=10000
       driver-class-name: org.sqlite.JDBC
   jpa:
         database-platform:  org.hibernate.community.dialect.SQLiteDialect

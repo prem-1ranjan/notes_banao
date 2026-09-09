@@ -4,6 +4,7 @@ import com.notesbanao.portal.common.ApiException;
 import com.notesbanao.portal.entity.UserEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -20,25 +21,37 @@ public class UserService {
     }
 
     public UserEntity findByEmail(String email) {
-        return userRepository.findByEmail(email).orElse(null);
+        if(email == null || email.isBlank()){
+            return null;
+        }
+        return userRepository.findByEmailIgnoreCase(email.trim()).orElse(null);
     }
 
     public UserEntity findById(Long userId){
         return userRepository.findById(userId)
                 .orElseThrow(() -> ApiException.badRequest("Referrer account not found."));
     }
+    public boolean existsByEmail(String email){
+        if(email == null || email.isBlank()){
+            return false;
+        }
+        return userRepository.existsByEmailIgnoreCase(email.trim());
+    }
 
+    @Transactional
     public UserEntity saveFromRequest(UserSaveRequest request) {
 
         String email = request.email().trim().toLowerCase();
 
-        if (userRepository.existsByEmail(email)) {
+//        Existing User Cannot create Another account
+        if (userRepository.existsByEmailIgnoreCase(email)) {
             throw ApiException.badRequest("An account with this email already exist.");
         }
 
         UserEntity user = new UserEntity();
+//        Store the normalized email
 
-        user.setEmail(request.email());
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
@@ -49,6 +62,7 @@ public class UserService {
        return userRepository.save(user);
     }
 
+    @Transactional
     public void updatePassword(Long userId, String newPassword) {
 
         UserEntity user = userRepository.findById(userId)
@@ -59,17 +73,18 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void addPoints(Long userId, int points) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> ApiException.badRequest("User not found."));
-
-        user.setBalancePoints(user.getBalancePoints() + points);
-        userRepository.save(user);
+        int updated = userRepository.addPointsAtomically(userId, points);
+        if(updated != 1){
+            throw ApiException.badRequest("User not found.");
+        }
     }
 
+    @Transactional
     public void updatePhone(String email, String phone) {
 
-        UserEntity user = userRepository.findByEmail(email).orElse(null);
+        UserEntity user = userRepository.findByEmailIgnoreCase(email).orElse(null);
 
         if (user == null) {
             throw new RuntimeException("User not found");

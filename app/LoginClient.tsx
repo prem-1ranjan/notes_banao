@@ -162,7 +162,7 @@ export function LoginClient({ initialMode = "login" }: { initialMode?: Mode }) {
         phone,
         password,
         accepted_terms: true,
-        referral_email: referralToken || undefined
+        referral_token: referralToken || undefined
       });
 
       if (data.needsEmailVerification) {
