@@ -2,10 +2,7 @@ package com.notesbanao.portal.auth;
 
 import com.notesbanao.portal.auth.dto.ChangePhoneRequest;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import com.notesbanao.portal.auth.dto.AuthResponse;
 import com.notesbanao.portal.auth.dto.LoginRequest;
@@ -68,4 +65,7 @@ public interface AuthApi {
     SimpleResponse changePhone(
             @RequestBody ChangePhoneRequest request,
             HttpServletRequest http);
+
+    @DeleteMapping("/account")
+    SimpleResponse deleteAccount(HttpServletRequest request,HttpServletResponse response);
 }

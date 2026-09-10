@@ -224,4 +224,13 @@ public class AuthService {
 
         userService.updatePhone(user.email(), phone);
     }
+    @Transactional
+    public void deleteAccount(UserDto user) {
+
+        if (user == null || user.email() == null || user.email().isBlank()) {
+            throw ApiException.notLoggedIn();
+        }
+
+        userService.softDeleteUser(user.email());
+    }
 }

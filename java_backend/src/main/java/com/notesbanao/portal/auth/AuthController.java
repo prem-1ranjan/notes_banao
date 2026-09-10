@@ -96,4 +96,18 @@ public class AuthController implements AuthApi {
 
         return SimpleResponse.success("Phone number updated.");
     }
+
+    @Override
+    public SimpleResponse deleteAccount(
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        UserDto user = sessionService.requireUser(request);
+
+        authService.deleteAccount(user);
+
+        sessionService.endSession(response);
+
+        return SimpleResponse.success("Account deleted successfully.");
+    }
 }

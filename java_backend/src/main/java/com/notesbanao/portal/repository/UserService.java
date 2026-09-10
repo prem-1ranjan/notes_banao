@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 public class UserService {
 
@@ -94,5 +96,11 @@ public class UserService {
         user.setPhoneVerified(true);
 
         userRepository.save(user);
+    }
+    @Transactional
+    public void softDeleteUser(String email){
+        UserEntity user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(()->ApiException.notLoggedIn());
+        user.setDeletedAt(LocalDateTime.now());
     }
 }

@@ -2,17 +2,29 @@ package com.notesbanao.portal.entity;
 
 import com.notesbanao.portal.converter.LocalDateConverter;
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
+@SQLRestriction("deleted_at IS NULL")
 public class UserEntity {
     @Id  //primary key of db
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name="deleted_at")
+    private LocalDateTime deletedAt;
 
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
+    }
 
     @Column(name = "balance_points", nullable = false)
     private int balancePoints = 0;
