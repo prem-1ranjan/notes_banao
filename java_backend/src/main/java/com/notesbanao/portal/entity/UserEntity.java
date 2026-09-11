@@ -4,6 +4,7 @@ import com.notesbanao.portal.converter.LocalDateConverter;
 import jakarta.persistence.*;
 import org.hibernate.annotations.SQLRestriction;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -16,13 +17,13 @@ public class UserEntity {
     private Long id;
 
     @Column(name="deleted_at")
-    private LocalDateTime deletedAt;
+    private Instant deletedAt;
 
-    public LocalDateTime getDeletedAt() {
+    public Instant getDeletedAt() {
         return deletedAt;
     }
 
-    public void setDeletedAt(LocalDateTime deletedAt) {
+    public void setDeletedAt(Instant deletedAt) {
         this.deletedAt = deletedAt;
     }
 

@@ -6,21 +6,90 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByEmailIgnoreCase(String email);
+
     boolean existsByEmailIgnoreCase(String email);
 
+
+    // =========================
+    // ADD REFERRAL POINTS
+    // =========================
+
     @Modifying
-    @Query("""
-            UPDATE UserEntity u
-            SET u.balancePoints = u.balancePoints + :points
-            WHERE u.id = :userId
-            """)
+    @Query(value = """
+            UPDATE users
+            SET balance_points = balance_points + :points
+            WHERE id = :userId
+              AND deleted_at IS NULL
+            """, nativeQuery = true)
     int addPointsAtomically(
             @Param("userId") Long userId,
             @Param("points") int points
+    );
+
+
+    // =========================
+    // SOFT DELETE USER
+    // =========================
+
+    @Modifying
+    @Query(value = """
+            UPDATE users
+            SET deleted_at = :deletedAt
+            WHERE id = :userId
+              AND deleted_at IS NULL
+            """, nativeQuery = true)
+    int softDelete(
+            @Param("userId") Long userId,
+             @Param("deletedAt") Instant deletedAt
+    );
+
+
+    // =========================
+    // RESTORE USER
+    // =========================
+
+    @Modifying
+    @Query(value = """
+            UPDATE users
+            SET deleted_at = NULL
+            WHERE id = :userId
+            """, nativeQuery = true)
+    int restoreUser(
+            @Param("userId") Long userId
+    );
+
+
+    // =========================
+    // FIND USER INCLUDING DELETED
+    // =========================
+
+    @Query(value = """
+            SELECT *
+            FROM users
+            WHERE lower(email) = lower(:email)
+            """, nativeQuery = true)
+    Optional<UserEntity> findAnyByEmail(
+            @Param("email") String email
+    );
+
+
+    // =========================
+    // PERMANENT DELETE
+    // =========================
+
+    @Modifying
+    @Query(value = """
+            DELETE FROM users
+            WHERE deleted_at IS NOT NULL
+              AND deleted_at < :cutoff
+            """, nativeQuery = true)
+    int deleteExpiredUsers(
+            @Param("cutoff") Instant cutoff
     );
 }

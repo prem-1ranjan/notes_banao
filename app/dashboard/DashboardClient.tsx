@@ -116,10 +116,7 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
   const [activeSection, setActiveSection] = useState<SectionKey>(requestedSection || "home");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [trial, setTrial] = useState<TrialStatus | null>(null);
-  const [accountDeletion, setAccountDeletion] = useState<{
-    pending: boolean;
-    request: { eligibleAt?: string; requestedAt?: string } | null;
-  } | null>(null);
+
   // Neutral, always-true default: the dashboard is auth-gated, so if it renders
   // the portal session is real — green dot = "signed in". The "go back to the
   // extension" call-to-action is added only when the user actually arrived from
@@ -507,44 +504,30 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
     }));
   }
 
-  async function loadAccountDeletion() {
-    try {
-      const data = await apiJson("/api/account/deletion-request");
-      setAccountDeletion({ pending: Boolean(data.pending), request: data.request || null });
-    } catch {
-      // Non-fatal: the profile page just won't show a pending banner.
-    }
-  }
 
-  async function requestAccountDeletion(reason: string): Promise<{ ok: boolean; message: string }> {
+
+  async function deleteAccount(): Promise<{ ok: boolean; message: string }> {
     try {
-      const data = await apiJson("/api/account/deletion-request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason })
+      const data = await apiJson("/api/auth/account", {
+        method: "DELETE"
       });
-      setAccountDeletion({ pending: true, request: data.request || null });
-      return { ok: true, message: "Deletion request submitted." };
-    } catch (err) {
-      if (isSessionExpired(err)) {
-        handleSessionExpired();
-        return { ok: false, message: "Login required." };
-      }
-      return { ok: false, message: err instanceof Error ? err.message : "Could not submit deletion request." };
-    }
-  }
 
-  async function revokeAccountDeletion(): Promise<{ ok: boolean; message: string }> {
-    try {
-      await apiJson("/api/account/deletion-request/revoke", { method: "POST" });
-      setAccountDeletion({ pending: false, request: null });
-      return { ok: true, message: "Deletion request cancelled." };
+      return {
+        ok: true,
+        message: data.message || "Account deleted successfully."
+      };
     } catch (err) {
       if (isSessionExpired(err)) {
         handleSessionExpired();
         return { ok: false, message: "Login required." };
       }
-      return { ok: false, message: err instanceof Error ? err.message : "Could not revoke deletion request." };
+
+      return {
+        ok: false,
+        message: err instanceof Error
+            ? err.message
+            : "Could not delete account."
+      };
     }
   }
 
@@ -585,7 +568,7 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
     loadRecentNotes(1);
     loadBillingConfig();
     loadRechargePackages();
-    loadAccountDeletion();
+
 
     return () => {
       alive = false;
@@ -760,10 +743,8 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
               referralReward={referralReward}
               trial={trial}
               user={user}
-              deletion={accountDeletion}
               onPasswordChange={changePassword}
-              onRequestDeletion={requestAccountDeletion}
-              onRevokeDeletion={revokeAccountDeletion}
+              onDeleteAccount={deleteAccount}
               onSendOtp={sendOtp}
               onVerifyOtp={verifyOtp}
               onPhoneChange={handlePhoneChange}

@@ -20,10 +20,7 @@ export type AccountActionResult = {
   message: string;
 };
 
-export type AccountDeletionState = {
-  pending: boolean;
-  request: { eligibleAt?: string; requestedAt?: string } | null;
-};
+
 
 type ProfilePanelProps = {
   referralReward: ReferralReward | null;
@@ -31,10 +28,10 @@ type ProfilePanelProps = {
   portalOrigin: string;
   trial: TrialStatus | null;
   user: User;
-  deletion: AccountDeletionState | null;
+
   onPasswordChange: (payload: PasswordChangeInput) => Promise<PasswordChangeResult>;
-  onRequestDeletion: (reason: string) => Promise<AccountActionResult>;
-  onRevokeDeletion: () => Promise<AccountActionResult>;
+  onDeleteAccount: () => Promise<AccountActionResult>;
+
   onSendOtp: (event: FormEvent<HTMLFormElement>) => Promise<TrialActionResult>;
   onVerifyOtp: (event: FormEvent<HTMLFormElement>) => Promise<TrialActionResult>;
   onPhoneChange: (phone: string) => void;
@@ -46,20 +43,24 @@ export function ProfilePanel({
   portalOrigin,
   trial,
   user,
-  deletion,
+
   onPasswordChange,
-  onRequestDeletion,
-  onRevokeDeletion,
+  onDeleteAccount,
+
+
+
+
+
   onSendOtp,
   onVerifyOtp,
   onPhoneChange
 }: ProfilePanelProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deleteReason, setDeleteReason] = useState("");
+
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteMessage, setDeleteMessage] = useState("");
   const [deleteError, setDeleteError] = useState(false);
-  const deletionPending = Boolean(deletion?.pending);
+
   const [passwordMessage, setPasswordMessage] = useState("");
   const [passwordError, setPasswordError] = useState(false);
   const [passwordBusy, setPasswordBusy] = useState(false);
@@ -167,34 +168,25 @@ export function ProfilePanel({
 
   async function submitDeletion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const trimmed = deleteReason.trim();
-    if (!trimmed) {
+
+    setDeleteBusy(true);
+    setDeleteError(false);
+    setDeleteMessage("Deleting your account...");
+
+    const result = await onDeleteAccount();
+
+    setDeleteBusy(false);
+
+    if (!result.ok) {
       setDeleteError(true);
-      setDeleteMessage("Please give a reason to continue.");
+      setDeleteMessage(result.message);
       return;
     }
-    setDeleteBusy(true);
-    setDeleteError(false);
-    setDeleteMessage("Submitting request...");
-    const result = await onRequestDeletion(trimmed);
-    setDeleteBusy(false);
-    setDeleteError(!result.ok);
-    setDeleteMessage(result.ok ? "" : result.message);
-    if (result.ok) {
-      setDeleteModalOpen(false);
-      setDeleteReason("");
-    }
+
+    setDeleteModalOpen(false);
   }
 
-  async function revokeDeletion() {
-    setDeleteBusy(true);
-    setDeleteError(false);
-    setDeleteMessage("Cancelling...");
-    const result = await onRevokeDeletion();
-    setDeleteBusy(false);
-    setDeleteError(!result.ok);
-    setDeleteMessage(result.ok ? "Deletion request cancelled. Your account is safe." : result.message);
-  }
+
   const handleChangePhone = async () => {
     if (!newPhone.trim()) {
       setChangePhoneMessage("Phone number is required.");
@@ -441,25 +433,18 @@ export function ProfilePanel({
       <div className="profile-action-card profile-danger-card">
         <div className="profile-danger-copy">
           <h3>Delete my account</h3>
-          {deletionPending ? (
-            <p role="status">
-              Deletion requested. Your account and NB Points will be deleted within 7 working days — cancel any time before then.
+
+            <p>
+              Your account will be deactivated immediately. You have 7 days to log back in and recover your account. After 7 days, it will be permanently deleted.
             </p>
-          ) : (
-            <p>Permanently delete your account, notes and NB Points. Only payment records the law requires are kept.</p>
-          )}
           <p className={`message ${deleteError ? "error" : deleteMessage ? "success" : ""}`} role="status">{deleteModalOpen ? "" : deleteMessage}</p>
         </div>
         <div className="profile-danger-action">
-          {deletionPending ? (
-            <button className="secondary" disabled={deleteBusy} onClick={revokeDeletion} type="button">
-              Revoke request
-            </button>
-          ) : (
+
             <button className="danger" onClick={() => setDeleteModalOpen(true)} type="button">
               Delete my account
             </button>
-          )}
+
         </div>
       </div>
 
@@ -477,22 +462,12 @@ export function ProfilePanel({
               <button className="ghost modal-close" aria-label="Close" onClick={closeDeleteModal} type="button">×</button>
             </div>
             <p>
-              This permanently deletes your account, notes, transcripts and NB Points within 7 working days.
-              You can revoke the request any time before it is processed. Once processed it cannot be undone.
+              Your account will be deactivated immediately.
+              You have 7 days to log back in and recover your account.
+              After 7 days, it will be permanently deleted.
             </p>
             <form method="post" onSubmit={submitDeletion}>
-              <label>
-                Please tell us why you are leaving <span aria-hidden="true">*</span>
-                <textarea
-                  name="reason"
-                  value={deleteReason}
-                  onChange={(event) => setDeleteReason(event.target.value)}
-                  rows={4}
-                  maxLength={2000}
-                  placeholder="Your reason (required)"
-                  required
-                />
-              </label>
+
               <div className="form-actions modal-actions">
                 <button className="secondary" onClick={closeDeleteModal} type="button" disabled={deleteBusy}>
                   Cancel

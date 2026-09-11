@@ -15,6 +15,7 @@ import com.notesbanao.portal.repository.UserSaveRequest;
 import com.notesbanao.portal.repository.UserService;
 import com.notesbanao.portal.referral.ReferralService;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.Instant;
 
 
 /**
@@ -55,7 +56,7 @@ public class AuthService {
                     + " characters.");
         }
         // Find user in database
-        UserEntity user = userService.findByEmail(email);
+        UserEntity user = userService.findAnyByEmail(email);
 
         if (user == null) {
             throw ApiException.badRequest("Invalid email or password.");
@@ -64,6 +65,33 @@ public class AuthService {
         // Compare entered password with hashed password from database
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw ApiException.badRequest("Invalid email or password.");
+        }
+        if (user.getDeletedAt() != null) {
+
+            Instant deletedAt = user.getDeletedAt();
+
+            Instant permanentDeleteTime = deletedAt.plusSeconds(
+                    7L * 24 * 60 * 60
+            );
+
+            Instant now = Instant.now();
+
+
+            // 7 days ke andar login kiya
+            if (now.isBefore(permanentDeleteTime)) {
+
+                // Restore account
+                userService.restoreUser(user.getId());
+
+            } else {
+
+                // 7 days complete ho chuke hain
+
+
+                throw ApiException.badRequest(
+                        "Your account has been permanently deleted."
+                );
+            }
         }
 
         return toUserDto(user);

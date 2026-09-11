@@ -6,7 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+
 
 @Service
 public class UserService {
@@ -23,18 +24,19 @@ public class UserService {
     }
 
     public UserEntity findByEmail(String email) {
-        if(email == null || email.isBlank()){
+        if (email == null || email.isBlank()) {
             return null;
         }
         return userRepository.findByEmailIgnoreCase(email.trim()).orElse(null);
     }
 
-    public UserEntity findById(Long userId){
+    public UserEntity findById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> ApiException.badRequest("Referrer account not found."));
     }
-    public boolean existsByEmail(String email){
-        if(email == null || email.isBlank()){
+
+    public boolean existsByEmail(String email) {
+        if (email == null || email.isBlank()) {
             return false;
         }
         return userRepository.existsByEmailIgnoreCase(email.trim());
@@ -61,7 +63,7 @@ public class UserService {
         user.setPhone(request.phone());
 
 
-       return userRepository.save(user);
+        return userRepository.save(user);
     }
 
     @Transactional
@@ -78,7 +80,7 @@ public class UserService {
     @Transactional
     public void addPoints(Long userId, int points) {
         int updated = userRepository.addPointsAtomically(userId, points);
-        if(updated != 1){
+        if (updated != 1) {
             throw ApiException.badRequest("User not found.");
         }
     }
@@ -97,10 +99,37 @@ public class UserService {
 
         userRepository.save(user);
     }
+
     @Transactional
-    public void softDeleteUser(String email){
+    public void softDeleteUser(String email) {
         UserEntity user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(()->ApiException.notLoggedIn());
-        user.setDeletedAt(LocalDateTime.now());
+                .orElseThrow(() -> ApiException.notLoggedIn());
+        int updated = userRepository.softDelete(
+                user.getId(),
+                Instant.now()
+        );
+
+        if (updated != 1) {
+            throw ApiException.badRequest("Unable to delete account.");
+        }
+    }
+    public UserEntity findAnyByEmail(String email) {
+
+        if (email == null || email.isBlank()) {
+            return null;
+        }
+
+        return userRepository.findAnyByEmail(email.trim())
+                .orElse(null);
+    }
+
+    @Transactional
+    public void restoreUser(Long userId) {
+
+        int updated = userRepository.restoreUser(userId);
+
+        if (updated != 1) {
+            throw ApiException.badRequest("Unable to restore account.");
+        }
     }
 }

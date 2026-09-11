@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 import com.notesbanao.portal.config.PortalProperties;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * A Java implementation of the NotesBanao portal API.
@@ -19,6 +20,7 @@ import com.notesbanao.portal.config.PortalProperties;
  * seeded on first start from the JSON in src/main/resources/seed.
  */
 @SpringBootApplication
+@EnableScheduling
 @EnableConfigurationProperties(PortalProperties.class)
 public class PortalApplication {
 
