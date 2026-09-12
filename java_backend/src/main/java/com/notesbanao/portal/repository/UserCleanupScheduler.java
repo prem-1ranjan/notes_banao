@@ -4,8 +4,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+
 
 @Service
 public class UserCleanupScheduler {
@@ -16,13 +15,13 @@ public class UserCleanupScheduler {
         this.userRepository = userRepository;
     }
 
-    @Scheduled(fixedDelay = 10000)
+   @Scheduled(cron = "0 0 * * * *")
     @Transactional
     public void permanentlyDeleteExpiredUsers() {
 
-        Instant cutoff = Instant.now().minus(7, ChronoUnit.DAYS);
 
-        int deleted = userRepository.deleteExpiredUsers(cutoff);
+
+        int deleted = userRepository.deleteExpiredUsers();
 
         if (deleted > 0) {
             System.out.println(

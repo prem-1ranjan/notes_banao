@@ -85,11 +85,11 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     @Modifying
     @Query(value = """
-            DELETE FROM users
-            WHERE deleted_at IS NOT NULL
-              AND deleted_at < :cutoff
-            """, nativeQuery = true)
-    int deleteExpiredUsers(
-            @Param("cutoff") Instant cutoff
-    );
+        DELETE FROM users
+        WHERE deleted_at IS NOT NULL
+          AND CAST(deleted_at AS INTEGER)
+              < (CAST(strftime('%s','now') AS INTEGER) * 1000
+                 - 7 * 24 * 60 * 60 * 1000)
+        """, nativeQuery = true)
+    int deleteExpiredUsers();
 }
