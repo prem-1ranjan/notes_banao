@@ -18,7 +18,7 @@ import com.notesbanao.portal.store.DemoDataStore;
 public class AccountService {
 
     /** How long after a request the account would actually be removed. */
-    private static final Duration DELETION_GRACE = Duration.ofDays(30);
+    private static final Duration DELETION_GRACE = Duration.ofDays(7);
 
     private final DemoDataStore store;
     private final ReferralService referralService;

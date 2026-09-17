@@ -170,6 +170,8 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
   }
 
   async function loadWalletOverview(page = walletActivityPage) {
+    console.count("LOAD WALLET OVERVIEW");
+    console.trace("WALLET OVERVIEW CALLED FROM");
     setWalletLoading(true);
     setWalletError("");
     try {
@@ -181,6 +183,7 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
         activities,
         pagination: normalizeWalletPagination(data.pagination, page, pageSize, activities)
       });
+      
       setWalletActivityPage(page);
     } catch (err) {
       if (isSessionExpired(err)) {
@@ -383,6 +386,7 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
           ...(couponCode ? { coupon_code: couponCode } : {})
         })
       });
+      console.log("RECHARGE WALLET RESPONSE:", data.wallet);
       // A real gateway would send the browser away to pay and come back. The
       // demo backend settles the order immediately and returns the updated
       // wallet, so the modal can go straight to its success receipt.
@@ -533,6 +537,7 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
 
   useEffect(() => {
     let alive = true;
+    console.count("DASHBOARD EFFECT RUN");
 
     if (source === "extension") {
       setMessage("Dashboard opened from the NotesBanao extension.");
@@ -573,7 +578,7 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
     return () => {
       alive = false;
     };
-  }, [router, source, requestedSection, requestedNoteId]);
+  }, [source, requestedSection, requestedNoteId]);
 
   async function logout() {
     await apiFetch("/api/auth/logout", { method: "POST" }).catch(() => {});

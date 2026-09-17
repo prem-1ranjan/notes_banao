@@ -9,6 +9,7 @@ import com.notesbanao.portal.wallet.dto.CouponValidateResponse;
 import com.notesbanao.portal.wallet.dto.RechargeRequest;
 import com.notesbanao.portal.wallet.dto.RechargeResponse;
 import com.notesbanao.portal.wallet.dto.WalletOverviewResponse;
+import com.notesbanao.portal.auth.dto.UserDto;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -26,14 +27,14 @@ public class WalletController implements WalletApi {
 
     @Override
     public WalletOverviewResponse overview(int page, int limit, HttpServletRequest request) {
-        sessionService.requireUser(request);
-        return walletService.overview(page, limit);
+        UserDto user = sessionService.requireUser(request);
+        return walletService.overview(page, limit, user);
     }
 
     @Override
     public RechargeResponse recharge(RechargeRequest request, HttpServletRequest http) {
-        sessionService.requireUser(http);
-        return walletService.recharge(request);
+        UserDto user = sessionService.requireUser(http);
+        return walletService.recharge(request, user);
     }
 
     @Override

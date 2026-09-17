@@ -131,6 +131,7 @@ export function WalletPanel({
   const [couponApplied, setCouponApplied] = useState<AppliedCoupon | null>(null);
   const wallet = walletOverview?.wallet;
   const totalPoints = wallet?.balance_points || 0;
+  console.log("WALLET UI POINTS:", totalPoints);
   const packageOptions = Array.isArray(rechargePackages) ? rechargePackages : [];
   const gatewayOptions = Array.isArray(paymentGateways) ? paymentGateways : [];
   const hasRechargePackages = packageOptions.length > 0;

@@ -3,6 +3,10 @@ package com.notesbanao.portal.wallet;
 import java.time.Instant;
 import java.util.List;
 
+import com.notesbanao.portal.auth.dto.UserDto;
+import com.notesbanao.portal.entity.UserEntity;
+import com.notesbanao.portal.repository.UserService;
+import com.notesbanao.portal.wallet.dto.*;
 import org.springframework.stereotype.Service;
 
 import com.notesbanao.portal.billing.dto.PointPackageDto;
@@ -11,15 +15,7 @@ import com.notesbanao.portal.common.Ids;
 import com.notesbanao.portal.common.PageMeta;
 import com.notesbanao.portal.common.Paging;
 import com.notesbanao.portal.store.DemoDataStore;
-import com.notesbanao.portal.wallet.dto.ActivityDto;
-import com.notesbanao.portal.wallet.dto.CouponDto;
-import com.notesbanao.portal.wallet.dto.CouponPreview;
-import com.notesbanao.portal.wallet.dto.CouponRequest;
-import com.notesbanao.portal.wallet.dto.CouponValidateResponse;
-import com.notesbanao.portal.wallet.dto.OrderDto;
-import com.notesbanao.portal.wallet.dto.RechargeRequest;
-import com.notesbanao.portal.wallet.dto.RechargeResponse;
-import com.notesbanao.portal.wallet.dto.WalletOverviewResponse;
+
 
 /**
  * NB Points: reading the balance, buying more, and applying coupons.
@@ -35,18 +31,27 @@ public class WalletService {
     private static final int RECEIPT_ACTIVITY_COUNT = 5;
 
     private final DemoDataStore store;
+    private final UserService userService;
 
-    public WalletService(DemoDataStore store) {
+    public WalletService(DemoDataStore store, UserService userService) {
         this.store = store;
+        this.userService = userService;
     }
 
-    public WalletOverviewResponse overview(int page, int limit) {
+    public WalletOverviewResponse overview(int page, int limit,UserDto user) {
         List<ActivityDto> all = store.activities();
         PageMeta meta = PageMeta.of(page, Paging.limit(limit, 10, MAX_PAGE_SIZE), all.size());
-        return new WalletOverviewResponse(true, store.wallet(), Paging.slice(all, meta), meta);
+
+        UserEntity dbUser = userService.findById(Long.valueOf(user.id()));
+        WalletDto wallet = new WalletDto(
+                user.id(),
+                dbUser.getBalancePoints(),
+                0
+        );
+        return new WalletOverviewResponse(true, wallet, Paging.slice(all, meta), meta);
     }
 
-    public RechargeResponse recharge(RechargeRequest request) {
+    public RechargeResponse recharge(RechargeRequest request, UserDto user) {
         PointPackageDto pack = store.packageByCode(text(request == null ? null : request.package_code()));
         if (pack == null) {
             throw ApiException.badRequest("Pick an NB Points pack.");
@@ -67,14 +72,17 @@ public class WalletService {
         OrderDto order = store.addOrder(new OrderDto(Ids.next("ord"), pack.code(), amountPaise, pack.currency(),
                 pack.base_points(), pack.bonus_points(), pack.total_points(), "paid", Instant.now().toString()));
 
-        store.creditPoints(pack.total_points());
+        userService.addPoints(Long.valueOf(user.id()), pack.total_points());
         store.addActivity(new ActivityDto(null, "payment", "recharge", "recharge", amountPaise,
                 pack.base_points(), pack.bonus_points(), pack.total_points(), pack.total_points(), null, null,
                 pack.currency(), "paid", "demo_gateway", Ids.next("demo"), order.id(), order.id(), null, null, null));
 
         List<ActivityDto> all = store.activities();
         PageMeta meta = PageMeta.of(1, RECEIPT_ACTIVITY_COUNT, all.size());
-        return RechargeResponse.settled(order, store.wallet(), Paging.slice(all, meta), meta);
+        return RechargeResponse.settled(order,
+                new WalletDto(user.id(), userService.findById(Long.valueOf(user.id())).getBalancePoints(),
+                0
+        ), Paging.slice(all, meta), meta);
     }
 
     /** Works out what a coupon would do, without claiming it. */
