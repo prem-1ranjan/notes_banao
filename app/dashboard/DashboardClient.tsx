@@ -116,6 +116,7 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
   const [activeSection, setActiveSection] = useState<SectionKey>(requestedSection || "home");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [trial, setTrial] = useState<TrialStatus | null>(null);
+  const [deletionPending, setDeletionPending] = useState(false);
 
   // Neutral, always-true default: the dashboard is auth-gated, so if it renders
   // the portal session is real — green dot = "signed in". The "go back to the
@@ -167,6 +168,21 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
     setError(true);
     setMessage("This session was signed out because the account logged in somewhere else.");
     router.replace("/");
+  }
+
+  async function loadDeletionState() {
+    try {
+      const data = await apiJson("/api/account/deletion-request");
+      setDeletionPending(Boolean(data.pending));
+    } catch (err) {
+      if (isSessionExpired(err)) {
+        handleSessionExpired();
+        return;
+      }
+
+      // Don't block the dashboard if deletion-state loading fails.
+      setDeletionPending(false);
+    }
   }
 
   async function loadWalletOverview(page = walletActivityPage) {
@@ -504,17 +520,22 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
     }));
   }
 
-
-
   async function deleteAccount(): Promise<{ ok: boolean; message: string }> {
     try {
-      const data = await apiJson("/api/auth/account", {
-        method: "DELETE"
+      const data = await apiJson("/api/account/deletion-request", {
+        method: "POST"
       });
+
+      const successMessage =
+        data.message || "Account deletion requested successfully.";
+
+      // The account is soft-deleted immediately,
+      // so return the user back to the homepage/login page.
+      router.replace("/");
 
       return {
         ok: true,
-        message: data.message || "Account deleted successfully."
+        message: successMessage
       };
     } catch (err) {
       if (isSessionExpired(err)) {
@@ -525,8 +546,55 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
       return {
         ok: false,
         message: err instanceof Error
-            ? err.message
-            : "Could not delete account."
+          ? err.message
+          : "Could not request account deletion."
+      };
+    }
+  }
+
+  async function revokeDeletion(): Promise<{ ok: boolean; message: string }> {
+    try {
+      const data = await apiJson("/api/account/deletion-request/revoke", {
+        method: "POST"
+      });
+
+      setUser((currentUser) => ({
+        ...currentUser,
+        deleted_at: null
+      }));
+
+      setDeletionPending(false);
+
+      const successMessage =
+        data.message || "Your account deletion request has been revoked.";
+
+      setError(false);
+      setMessage(successMessage);
+
+      return {
+        ok: true,
+        message: successMessage
+      };
+    } catch (err) {
+      if (isSessionExpired(err)) {
+        handleSessionExpired();
+        return {
+          ok: false,
+          message: "Login required."
+        };
+      }
+
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Could not revoke the deletion request.";
+
+      setError(true);
+      setMessage(errorMessage);
+
+      return {
+        ok: false,
+        message: errorMessage
       };
     }
   }
@@ -568,6 +636,7 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
     loadRecentNotes(1);
     loadBillingConfig();
     loadRechargePackages();
+    loadDeletionState();
 
 
     return () => {
@@ -576,7 +645,7 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
   }, [router, source, requestedSection, requestedNoteId]);
 
   async function logout() {
-    await apiFetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    await apiFetch("/api/auth/logout", { method: "POST" }).catch(() => { });
     router.push("/");
   }
 
@@ -680,6 +749,28 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
           onLogout={logout}
         />
         <section className="portal-content">
+          {deletionPending && (
+            <section className="account-deletion-banner">
+              <div className="account-deletion-banner-content">
+                <strong> Account deletion pending</strong>
+
+                <p>
+                  Your account is scheduled for permanent deletion.
+                  You have 7 days from your deletion request to revoke it
+                  and keep your account.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="account-deletion-revoke"
+                onClick={revokeDeletion}
+              >
+                Revoke deletion request
+              </button>
+            </section>
+          )}
+
           {activeSection === "home" && (
             <HomePanel />
           )}

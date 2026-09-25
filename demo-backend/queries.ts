@@ -18,12 +18,16 @@ const DELETION_GRACE_DAYS = 30;
 export type UserRow = {
   id: string;
   email: string;
+  first_name: string | null;
+  last_name: string | null;
+  date_of_birth: string | null;
   email_verified: number;
   has_password: number;
   phone_e164: string | null;
   phone_verified: number;
   status: string;
   terms_accepted_current: number;
+  deleted_at: string | null;
   balance_points: number;
   reserved_points: number;
   trial_points: number;
@@ -33,12 +37,19 @@ export type UserRow = {
 export type PortalUser = {
   id: string;
   email: string;
+
+  first_name: string | null;
+  last_name: string | null;
+  date_of_birth: string | null;
+
   email_verified: boolean;
   has_password: boolean;
   phone_e164: string | null;
   phone_verified: boolean;
   status: string;
   terms_accepted_current: boolean;
+
+  deleted_at: string | null;
 };
 
 export type Pagination = {
@@ -61,15 +72,23 @@ export function userRow(): UserRow {
 
 export function portalUser(): PortalUser {
   const row = userRow();
+
   return {
     id: row.id,
     email: row.email,
+
+    first_name: null,
+    last_name: null,
+    date_of_birth: null,
+
     email_verified: Boolean(row.email_verified),
     has_password: Boolean(row.has_password),
     phone_e164: row.phone_e164,
     phone_verified: Boolean(row.phone_verified),
     status: row.status,
-    terms_accepted_current: Boolean(row.terms_accepted_current)
+    terms_accepted_current: Boolean(row.terms_accepted_current),
+
+    deleted_at: null
   };
 }
 
