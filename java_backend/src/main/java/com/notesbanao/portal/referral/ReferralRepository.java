@@ -11,9 +11,7 @@ import java.util.Optional;
 
 public interface ReferralRepository extends JpaRepository<ReferralEntity, Long> {
 
-    Optional<ReferralEntity> findByToken(String token);
-
-    boolean existsByToken(String token);
+     Optional<ReferralEntity> findByToken(String token);
      Optional<ReferralEntity> findFirstByInviteeEmailIgnoreCaseAndUsedFalseOrderByCreatedAtDesc(String inviteeEmail);
 
      @Modifying

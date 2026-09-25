@@ -6,7 +6,6 @@ import org.hibernate.annotations.SQLRestriction;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -46,6 +45,17 @@ public class UserEntity {
     private String lastName;
     private String phone;
     private boolean phoneVerified;
+
+    @Column(name = "terms_accepted", nullable = false)
+    private boolean termsAccepted = false;
+
+    public boolean isTermsAccepted() {
+        return termsAccepted;
+    }
+
+    public void setTermsAccepted(boolean termsAccepted) {
+        this.termsAccepted = termsAccepted;
+    }
 
     public String getPhone() {
         return phone;

@@ -9,11 +9,13 @@ import org.springframework.stereotype.Service;
 import com.notesbanao.portal.auth.dto.UserDto;
 import com.notesbanao.portal.common.ApiException;
 import com.notesbanao.portal.config.PortalProperties;
-import com.notesbanao.portal.store.DemoDataStore;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * Reads and writes the session cookie, and answers "who is calling?".
@@ -28,13 +30,11 @@ import jakarta.servlet.http.HttpServletResponse;
 public class SessionService {
 
     private final PortalProperties properties;
-    private final DemoDataStore store;
     private final JwtUtil jwtUtil;
     private final UserService userService;
 
-    public SessionService(PortalProperties properties, DemoDataStore store,JwtUtil jwtUtil,UserService userService) {
+    public SessionService(PortalProperties properties, JwtUtil jwtUtil,UserService userService) {
         this.properties = properties;
-        this.store = store;
         this.jwtUtil = jwtUtil;
         this.userService = userService;
     }
@@ -48,10 +48,17 @@ public class SessionService {
             return null;
         }
 
-        UserEntity user = userService.findByEmail(email);
+        UserEntity user = userService.findAnyByEmail(email);
 
         if (user == null) {
             return null;
+        }
+        if(user.getDeletedAt() != null){
+            Instant expiry = user.getDeletedAt().plus(Duration.ofDays(7));
+
+            if(Instant.now().isAfter(expiry)){
+                return null;
+            }
         }
 
         return new UserDto(
@@ -67,7 +74,10 @@ public class SessionService {
                 user.getPhone(),
                 user.isPhoneVerified(),
                 "active",
-                store.user().terms_accepted_current()
+                user.isTermsAccepted(),
+                user.getDeletedAt() != null
+                        ? user.getDeletedAt().toString()
+                        : null
         );
     }
 

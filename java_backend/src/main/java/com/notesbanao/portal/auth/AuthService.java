@@ -10,33 +10,23 @@ import com.notesbanao.portal.auth.dto.PasswordChangeRequest;
 import com.notesbanao.portal.auth.dto.SignupRequest;
 import com.notesbanao.portal.auth.dto.UserDto;
 import com.notesbanao.portal.common.ApiException;
-import com.notesbanao.portal.store.DemoDataStore;
 import com.notesbanao.portal.repository.UserSaveRequest;
 import com.notesbanao.portal.repository.UserService;
 import com.notesbanao.portal.referral.ReferralService;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Instant;
 
-
-/**
- * Account rules.
- *
- * This implementation is a stand-in: no password is ever checked or stored and
- * no email is sent. Replace the body of these methods with real work and the
- * controller, the interface and the front end all stay as they are.
- */
 @Service
 public class AuthService {
 
     private static final int MINIMUM_PASSWORD_LENGTH = 8;
 
-    private final DemoDataStore store;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final ReferralService referralService;
 
-    public AuthService(DemoDataStore store, UserService userService, PasswordEncoder passwordEncoder, ReferralService referralService) {
-        this.store = store;
+    public AuthService(UserService userService, PasswordEncoder passwordEncoder, ReferralService referralService) {
         this.userService=userService;
         this.passwordEncoder = passwordEncoder;
         this.referralService = referralService;
@@ -45,53 +35,66 @@ public class AuthService {
 
     /** Any email and any long-enough password are accepted in this build. */
     public UserDto signIn(LoginRequest request) {
-        String email = value(request == null ? null : request.email()).toLowerCase();
-        String password = request == null || request.password() == null ? "" : request.password();
+
+        String email = value(
+                request == null ? null : request.email()
+        ).toLowerCase();
+
+        String password =
+                request == null || request.password() == null
+                        ? ""
+                        : request.password();
 
         if (!email.contains("@")) {
-            throw ApiException.badRequest("Enter a valid email address.");
+            throw ApiException.badRequest(
+                    "Enter a valid email address."
+            );
         }
+
         if (password.length() < MINIMUM_PASSWORD_LENGTH) {
-            throw ApiException.badRequest("Password must be at least " + MINIMUM_PASSWORD_LENGTH
-                    + " characters.");
+            throw ApiException.badRequest(
+                    "Password must be at least "
+                            + MINIMUM_PASSWORD_LENGTH
+                            + " characters."
+            );
         }
-        // Find user in database
+
+        // Include deleted users
         UserEntity user = userService.findAnyByEmail(email);
 
         if (user == null) {
-            throw ApiException.badRequest("Invalid email or password.");
+            throw ApiException.badRequest(
+                    "Invalid email or password."
+            );
         }
 
-        // Compare entered password with hashed password from database
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw ApiException.badRequest("Invalid email or password.");
+        // Password check
+        if (!passwordEncoder.matches(
+                password,
+                user.getPassword())) {
+
+            throw ApiException.badRequest(
+                    "Invalid email or password."
+            );
         }
+
+        // Deleted account check
         if (user.getDeletedAt() != null) {
 
-            Instant deletedAt = user.getDeletedAt();
+            Instant deletionExpiry =
+                    user.getDeletedAt()
+                            .plusSeconds(7L * 24 * 60 * 60);
 
-            Instant permanentDeleteTime = deletedAt.plusSeconds(
-                    7L * 24 * 60 * 60
-            );
-
-            Instant now = Instant.now();
-
-
-            // 7 days ke andar login kiya
-            if (now.isBefore(permanentDeleteTime)) {
-
-                // Restore account
-                userService.restoreUser(user.getId());
-
-            } else {
-
-                // 7 days complete ho chuke hain
-
+            if (Instant.now().isAfter(deletionExpiry)) {
 
                 throw ApiException.badRequest(
                         "Your account has been permanently deleted."
                 );
             }
+
+            // User is still inside 7-day window.
+            // Allow login.
+            // DO NOT restore automatically.
         }
 
         return toUserDto(user);
@@ -134,7 +137,6 @@ public class AuthService {
     }
 
     private UserDto toUserDto(UserEntity user) {
-        System.out.println("PHONE FROM DB = " + user.getPhone());
         return new UserDto(
                 String.valueOf(user.getId()),
                 user.getEmail(),
@@ -148,14 +150,13 @@ public class AuthService {
                 user.getPhone(),
                 user.isPhoneVerified(),
                 "active",
-                true
+                user.isTermsAccepted(),
+                user.getDeletedAt() != null
+                        ? user.getDeletedAt().toString()
+                        : null
         );
     }
 
-    /**
-     * Nothing is stored. The only thing that changes is the has_password flag,
-     * which is what the profile screen reacts to.
-     */
     public String changePassword(UserDto user, PasswordChangeRequest request) {
 
         if (request == null) {
@@ -211,9 +212,6 @@ public class AuthService {
                 userEntity.getId(),
                 newPassword
         );
-
-        store.setHasPassword(true);
-
         return "Password changed.";
     }
 
@@ -233,8 +231,11 @@ public class AuthService {
         }
     }
 
-    public void acceptTerms() {
-        store.acceptTerms();
+    public void acceptTerms(UserDto user) {
+        if(user == null || user.id() == null || user.id().isBlank()){
+            throw ApiException.notLoggedIn();
+        }
+        userService.acceptTerms(Long.valueOf(user.id()));
     }
 
     private static String value(String raw) {
@@ -251,14 +252,5 @@ public class AuthService {
         String phone = request.phone();
 
         userService.updatePhone(user.email(), phone);
-    }
-    @Transactional
-    public void deleteAccount(UserDto user) {
-
-        if (user == null || user.email() == null || user.email().isBlank()) {
-            throw ApiException.notLoggedIn();
-        }
-
-        userService.softDeleteUser(user.email());
     }
 }
