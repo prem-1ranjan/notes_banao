@@ -357,6 +357,7 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
     setRechargePackagesLoading(true);
     try {
       const data = await apiJson("/api/billing/packages");
+      console.log("🔥 PACKAGES API RESPONSE:", data);
       setRechargePackages(normalizePointPackages(data.packages));
       setPaymentGateways(normalizePaymentGateways(data.payment_gateways));
     } catch (err) {
@@ -371,34 +372,75 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
     }
   }
 
-  async function rechargePoints(packageCode: string, gateway: string, couponCode?: string): Promise<RechargeOutcome> {
+  async function rechargePoints(
+      packageCode: string,
+      gateway: string,
+      couponCode?: string
+  ): Promise<RechargeOutcome> {
     setRechargeLoading(true);
     setRechargeStatus("Starting payment...");
     setError(false);
     setMessage("Processing recharge...");
+
     try {
+      // External payment gateway
+      const gatewayCode = gateway.toLowerCase();
+
+      if (gatewayCode !== "demo_gateway") {
+        const data = await apiJson(
+            `/api/payment/create?gateway=${encodeURIComponent(gatewayCode)}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                packageCode,
+                couponCode: couponCode || "",
+              }),
+            }
+        );
+
+        if (!data.redirectUrl) {
+          throw new Error("Payment checkout URL was not received.");
+        }
+
+        setRechargeStatus("Redirecting to payment gateway...");
+
+        window.location.href = data.redirectUrl;
+
+        return { status: "close" };
+      }
+
+      // Existing demo payment flow
       const data = await apiJson("/api/wallet/recharge", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           package_code: packageCode,
           gateway,
-          ...(couponCode ? { coupon_code: couponCode } : {})
-        })
+          ...(couponCode ? { coupon_code: couponCode } : {}),
+        }),
       });
-      console.log("RECHARGE WALLET RESPONSE:", data.wallet);
-      // A real gateway would send the browser away to pay and come back. The
-      // demo backend settles the order immediately and returns the updated
-      // wallet, so the modal can go straight to its success receipt.
+
       const activities = normalizeWalletActivities(data.activities);
+
       setWalletOverview({
         wallet: data.wallet,
         activities,
-        pagination: normalizeWalletPagination(data.pagination, 1, walletActivityPageSize(), activities)
+        pagination: normalizeWalletPagination(
+            data.pagination,
+            1,
+            walletActivityPageSize(),
+            activities
+        ),
       });
+
       setWalletActivityPage(1);
       setMessage("Recharge completed. NB Points updated.");
+
       const order = data.order || {};
+
       return {
         status: "receipt",
         receipt: {
@@ -407,16 +449,20 @@ export function DashboardClient({ initialUser, portalOrigin }: { initialUser: Us
           currency: String(order.currency || "INR"),
           base_points: Number(order.base_points || 0),
           bonus_points: Number(order.bonus_points || 0),
-          total_points: Number(order.total_points || 0)
-        }
+          total_points: Number(order.total_points || 0),
+        },
       };
     } catch (err) {
       if (isSessionExpired(err)) {
         handleSessionExpired();
         return { status: "stay" };
       }
+
       setError(true);
-      setMessage(err instanceof Error ? err.message : "Recharge failed.");
+      setMessage(
+          err instanceof Error ? err.message : "Recharge failed."
+      );
+
       return { status: "stay" };
     } finally {
       setRechargeLoading(false);

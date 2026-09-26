@@ -20,7 +20,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     // ADD REFERRAL POINTS
     // =========================
 
-    @Modifying
+    @Modifying(clearAutomatically = true,flushAutomatically = true)
     @Query(value = """
             UPDATE users
             SET balance_points = balance_points + :points

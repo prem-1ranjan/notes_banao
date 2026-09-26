@@ -131,7 +131,6 @@ export function WalletPanel({
   const [couponApplied, setCouponApplied] = useState<AppliedCoupon | null>(null);
   const wallet = walletOverview?.wallet;
   const totalPoints = wallet?.balance_points || 0;
-  console.log("WALLET UI POINTS:", totalPoints);
   const packageOptions = Array.isArray(rechargePackages) ? rechargePackages : [];
   const gatewayOptions = Array.isArray(paymentGateways) ? paymentGateways : [];
   const hasRechargePackages = packageOptions.length > 0;
@@ -348,9 +347,11 @@ export function WalletPanel({
                     <div className="ledger-copy">
                       <strong>{activityTitle(activity)}</strong>
                       <span title={fullDescription}>{description}</span>
-                      {invoiceError?.id === orderId && (
-                        <span className="invoice-link-error">{invoiceError.message}</span>
-                      )}
+                        {invoiceError?.id && invoiceError.id === orderId && (
+                            <span className="invoice-link-error">
+        {invoiceError.message}
+    </span>
+                        )}
                     </div>
                     <span className="ledger-date">
                       {invoiceable && (

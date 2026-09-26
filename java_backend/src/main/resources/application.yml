@@ -49,3 +49,10 @@ portal:
 logging:
   level:
     com.notesbanao.portal: INFO
+
+phonepe:
+    client-id: ${PHONEPE_CLIENT_ID}
+    client-secret: ${PHONEPE_CLIENT_SECRET}
+    client-version: 1
+    env: SANDBOX
+    redirect-url: http://127.0.0.1:3000/payment/result

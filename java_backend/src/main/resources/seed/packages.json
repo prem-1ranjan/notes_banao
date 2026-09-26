@@ -36,6 +36,14 @@
       "environment": "demo",
       "active": true,
       "sort_order": 1
+    },
+    {
+      "code": "phonepe",
+      "display_name": "PhonePe",
+      "provider_type": "phonepe",
+      "environment": "sandbox",
+      "active": true,
+      "sort_order": 2
     }
   ]
 }

@@ -18,8 +18,8 @@ export function activityAmount(activity: WalletActivity) {
     // back (-), failed/cancelled changed nothing — their amount shows UNSIGNED
     // (an empty cell just looked broken next to the other rows).
     const status = String(activity.status || "").toLowerCase();
-    const sign = status === "paid" ? "+" : status === "refunded" ? "-" : "";
-    return `${sign}${nbPoints(activity.total_points)}`;
+    const sign = status === "paid" ? "" : status === "refunded" ? "-" : "";
+    return `+${sign}${nbPoints(activity.total_points)}`;
   }
   const points = Number(activity.points_delta || 0);
   const sign = points > 0 ? "+" : points < 0 ? "-" : "";
