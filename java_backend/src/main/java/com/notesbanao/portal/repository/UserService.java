@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
-
 @Service
 public class UserService {
 
@@ -78,6 +77,16 @@ public class UserService {
     }
 
     @Transactional
+    public void acceptTerms(Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notLoggedIn());
+
+        user.setTermsAccepted(true);
+
+        userRepository.save(user);
+    }
+
+    @Transactional
     public void addPoints(Long userId, int points) {
         int updated = userRepository.addPointsAtomically(userId, points);
         if (updated != 1) {
@@ -101,14 +110,8 @@ public class UserService {
     }
 
     @Transactional
-    public void softDeleteUser(String email) {
-        UserEntity user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> ApiException.notLoggedIn());
-        int updated = userRepository.softDelete(
-                user.getId(),
-                Instant.now()
-        );
-
+    public void softDeleteUser(Long userId) {
+        int updated = userRepository.softDelete(userId, Instant.now());
         if (updated != 1) {
             throw ApiException.badRequest("Unable to delete account.");
         }

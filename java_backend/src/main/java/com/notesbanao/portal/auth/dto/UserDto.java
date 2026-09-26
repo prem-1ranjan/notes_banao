@@ -14,6 +14,7 @@ public record UserDto(
         String phone_e164,
         boolean phone_verified,
         String status,
-        boolean terms_accepted_current) {
+        boolean terms_accepted_current,
+        String deleted_at) {
 
 }

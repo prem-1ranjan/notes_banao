@@ -309,7 +309,8 @@ public class DemoDataStore {
                 user.phone_e164(),
                 user.phone_verified(),
                 user.status(),
-                user.terms_accepted_current()
+                user.terms_accepted_current(),
+                null
         );
     }
 
@@ -325,7 +326,8 @@ public class DemoDataStore {
                 user.phone_e164(),
                 user.phone_verified(),
                 user.status(),
-                user.terms_accepted_current()
+                user.terms_accepted_current(),
+                null
         );
     }
 
@@ -341,7 +343,8 @@ public class DemoDataStore {
                 user.phone_e164(),
                 user.phone_verified(),
                 user.status(),
-                true
+                true,
+                null
         );
     }
 
@@ -418,7 +421,8 @@ public class DemoDataStore {
                 phone,
                 true,
                 user.status(),
-                user.terms_accepted_current()
+                user.terms_accepted_current(),
+                null
         );
         if (trialClaimed) {
             return 0;

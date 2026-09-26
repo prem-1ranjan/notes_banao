@@ -640,7 +640,7 @@ textarea {
   align-items: start;
 }
 
-.staff-split-grid > div {
+.staff-split-grid>div {
   min-width: 0;
   display: grid;
   gap: 10px;
@@ -675,7 +675,7 @@ textarea {
 /* Grid items default to min-width:auto, so number/datetime-local inputs (which
    have an intrinsic min width) overflow their cell and overlap neighbours.
    Let items shrink and make every control fill its cell. */
-.staff-form-grid > * {
+.staff-form-grid>* {
   min-width: 0;
 }
 
@@ -995,7 +995,7 @@ textarea {
   overflow: hidden;
 }
 
-.support-section + .support-section {
+.support-section+.support-section {
   margin-top: 0;
 }
 
@@ -1126,7 +1126,7 @@ textarea {
 }
 
 /* Short pages (e.g. /downloads): the footer stays pinned to the bottom. */
-.landing-page > .landing-footer {
+.landing-page>.landing-footer {
   margin-top: auto;
 }
 
@@ -1503,7 +1503,7 @@ textarea {
   line-height: 1.14;
 }
 
-.public-page-header > p:last-child {
+.public-page-header>p:last-child {
   max-width: none;
   margin: 14px 0 0;
   color: #4d5c70;
@@ -1589,7 +1589,7 @@ textarea {
 }
 
 .pricing-overview article,
-.pricing-details > div {
+.pricing-details>div {
   min-width: 0;
   display: grid;
   align-content: start;
@@ -1923,9 +1923,23 @@ textarea {
 }
 
 .form-help {
+
   display: flex;
+
   justify-content: flex-end;
+
   margin-top: -4px;
+
+}
+
+.account-help {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
 }
 
 .inline-link {
@@ -2219,7 +2233,7 @@ textarea {
   border-top: 1px solid #dfe6f2;
 }
 
-.sidebar-download + .sidebar-status {
+.sidebar-download+.sidebar-status {
   margin-top: 12px;
 }
 
@@ -2923,6 +2937,68 @@ textarea {
   line-height: 1.5;
 }
 
+.account-deletion-banner {
+  margin: 16px 24px 0;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  border: 1px solid #f0c36d;
+  border-radius: 8px;
+  background: var(--amber-soft);
+}
+
+.account-deletion-banner-content {
+  min-width: 0;
+}
+
+.account-deletion-banner strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--amber);
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.account-deletion-banner p {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.account-deletion-revoke {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid #d8a63f;
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--amber);
+  font-weight: 650;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.account-deletion-revoke:hover:not(:disabled) {
+  border-color: var(--amber);
+  background: #fffaf0;
+}
+
+@media (max-width: 700px) {
+  .account-deletion-banner {
+    margin-left: 12px;
+    margin-right: 12px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .account-deletion-revoke {
+    width: 100%;
+  }
+}
+
 /* Public account-deletion request form */
 .public-form {
   display: grid;
@@ -3019,7 +3095,7 @@ textarea {
   margin-bottom: -2px;
 }
 
-.panel-header.compact > div:first-child {
+.panel-header.compact>div:first-child {
   min-width: 0;
 }
 
@@ -3109,7 +3185,7 @@ textarea {
   color: #4e596c;
 }
 
-.points-card > strong {
+.points-card>strong {
   overflow-wrap: anywhere;
   color: #050816;
   font-size: clamp(26px, 3.2vw, 34px);
@@ -3118,12 +3194,12 @@ textarea {
   line-height: 1.05;
 }
 
-.points-card > small {
+.points-card>small {
   max-width: 560px;
   font-size: 13px;
 }
 
-.points-card > span {
+.points-card>span {
   color: #111827;
   font-size: 18px;
   font-weight: 700;
@@ -3734,7 +3810,7 @@ textarea {
   align-items: center;
 }
 
-.extension-mini-option > div {
+.extension-mini-option>div {
   display: grid;
   gap: 2px;
   min-width: 0;
@@ -3744,7 +3820,7 @@ textarea {
   gap: 8px;
 }
 
-.extension-mini-option-limit > span {
+.extension-mini-option-limit>span {
   text-align: right;
 }
 
@@ -4009,7 +4085,7 @@ textarea {
 
 .profile-password-form label:first-child,
 .profile-password-form .form-actions,
-.profile-password-form + .message {
+.profile-password-form+.message {
   grid-column: 1 / -1;
 }
 
@@ -4534,7 +4610,7 @@ textarea {
     min-width: max-content;
   }
 
-  .sidebar-download + .sidebar-status {
+  .sidebar-download+.sidebar-status {
     margin-top: 0;
   }
 
@@ -4911,7 +4987,7 @@ textarea {
     min-width: 0;
   }
 
-  .side-nav-copy > span {
+  .side-nav-copy>span {
     overflow: hidden;
     font-size: 11px;
     line-height: 1.15;
@@ -4999,7 +5075,7 @@ textarea {
     padding: 14px;
   }
 
-  .points-card > strong {
+  .points-card>strong {
     font-size: 30px;
   }
 
@@ -5227,7 +5303,7 @@ textarea {
   color: var(--text);
 }
 
-.downloads-card > p {
+.downloads-card>p {
   color: var(--muted);
   line-height: 1.5;
 }
@@ -5436,7 +5512,7 @@ textarea {
   text-decoration: none;
 }
 
-.sidebar-bugbounty + .sidebar-student-portal {
+.sidebar-bugbounty+.sidebar-student-portal {
   margin-top: 12px;
 }
 
@@ -5444,7 +5520,7 @@ textarea {
   text-decoration: none;
 }
 
-.sidebar-student-portal + .sidebar-download {
+.sidebar-student-portal+.sidebar-download {
   margin-top: 12px;
 }
 
@@ -5458,7 +5534,7 @@ textarea {
     min-width: max-content;
   }
 
-  .sidebar-bugbounty + .sidebar-student-portal {
+  .sidebar-bugbounty+.sidebar-student-portal {
     margin-top: 0;
   }
 
@@ -5466,7 +5542,7 @@ textarea {
     min-width: max-content;
   }
 
-  .sidebar-student-portal + .sidebar-download {
+  .sidebar-student-portal+.sidebar-download {
     margin-top: 0;
   }
 }
@@ -5515,7 +5591,7 @@ textarea {
   background: var(--panel-soft);
 }
 
-.bugbounty-summary article > span:first-child {
+.bugbounty-summary article>span:first-child {
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
@@ -5722,9 +5798,9 @@ textarea {
   box-shadow: 0 3px 10px rgba(30, 55, 90, 0.04);
 
   transition:
-          border-color 160ms ease,
-          box-shadow 160ms ease,
-          transform 160ms ease;
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
 .profile-panel .profile-item:hover {
@@ -5734,7 +5810,7 @@ textarea {
 }
 
 /* Field labels */
-.profile-panel .profile-item > span {
+.profile-panel .profile-item>span {
   color: #64748b;
   font-size: 12px;
   font-weight: 700;
@@ -5742,7 +5818,7 @@ textarea {
 }
 
 /* Field values */
-.profile-panel .profile-item > strong {
+.profile-panel .profile-item>strong {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -5827,7 +5903,7 @@ textarea {
   border-color: #cbdcf5;
 }
 
-.profile-panel .profile-phone-change > div {
+.profile-panel .profile-phone-change>div {
   display: grid;
   gap: 10px;
 }
@@ -6002,6 +6078,7 @@ textarea {
    ========================================================= */
 
 @media (max-width: 900px) {
+
   .profile-panel .profile-grid,
   .profile-panel .profile-action-grid {
     grid-template-columns: 1fr;

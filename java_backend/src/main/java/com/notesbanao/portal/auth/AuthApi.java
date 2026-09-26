@@ -59,13 +59,8 @@ public interface AuthApi {
     @PostMapping("/terms/accept")
     SimpleResponse acceptTerms(HttpServletRequest request);
 
-
-
     @PostMapping("/change-phone")
     SimpleResponse changePhone(
             @RequestBody ChangePhoneRequest request,
             HttpServletRequest http);
-
-    @DeleteMapping("/account")
-    SimpleResponse deleteAccount(HttpServletRequest request,HttpServletResponse response);
 }

@@ -1,13 +1,9 @@
 package com.notesbanao.portal.account;
 
+import com.notesbanao.portal.account.dto.*;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.notesbanao.portal.account.dto.DeletionRequestDto;
-import com.notesbanao.portal.account.dto.DeletionStateResponse;
-import com.notesbanao.portal.account.dto.DeletionSubmitRequest;
-import com.notesbanao.portal.account.dto.ReferralInviteRequest;
-import com.notesbanao.portal.account.dto.ReferralInviteResponse;
 import com.notesbanao.portal.auth.SessionService;
 import com.notesbanao.portal.auth.dto.UserDto;
 import com.notesbanao.portal.config.PortalProperties;
@@ -36,22 +32,23 @@ public class AccountController implements AccountApi {
 
     @Override
     public DeletionStateResponse deletionState(HttpServletRequest request) {
-        sessionService.requireUser(request);
-        DeletionRequestDto pending = accountService.currentDeletionRequest();
+        UserDto user = sessionService.requireUser(request);
+        DeletionRequestDto pending = accountService.currentDeletionRequest(Long.valueOf(user.id()));
         return new DeletionStateResponse(true, pending != null, pending);
     }
 
     @Override
-    public DeletionStateResponse requestDeletion(DeletionSubmitRequest request, HttpServletRequest http) {
-        sessionService.requireUser(http);
-        DeletionRequestDto created = accountService.requestDeletion(request == null ? null : request.reason());
+    public DeletionStateResponse requestDeletion(HttpServletRequest http) {
+
+        UserDto user = sessionService.requireUser(http);
+        DeletionRequestDto created = accountService.requestDeletion(Long.valueOf(user.id()));
         return new DeletionStateResponse(true, true, created);
     }
 
     @Override
     public DeletionStateResponse revokeDeletion(HttpServletRequest request) {
-        sessionService.requireUser(request);
-        accountService.revokeDeletion();
+        UserDto user = sessionService.requireUser(request);
+        accountService.revokeDeletion(Long.valueOf(user.id()));
         return new DeletionStateResponse(true, false, null);
     }
 

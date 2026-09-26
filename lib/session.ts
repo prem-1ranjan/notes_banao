@@ -23,12 +23,16 @@ import { getCurrentUser as demoCurrentUser } from "@/demo-backend/session";
 export type PortalUser = {
   id: string;
   email: string;
+  first_name: string | null;
+  last_name: string | null;
+  date_of_birth: string | null;
   email_verified: boolean;
   has_password: boolean;
   phone_e164: string | null;
   phone_verified: boolean;
   status: string;
   terms_accepted_current: boolean;
+  deleted_at: string | null;
 };
 
 export async function getCurrentUser(): Promise<PortalUser | null> {

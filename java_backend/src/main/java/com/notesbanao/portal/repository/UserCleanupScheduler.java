@@ -19,8 +19,6 @@ public class UserCleanupScheduler {
     @Transactional
     public void permanentlyDeleteExpiredUsers() {
 
-
-
         int deleted = userRepository.deleteExpiredUsers();
 
         if (deleted > 0) {

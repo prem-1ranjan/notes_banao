@@ -3,6 +3,9 @@ package com.notesbanao.portal.account;
 import java.time.Duration;
 import java.time.Instant;
 
+import com.notesbanao.portal.entity.AccountDeletionRequestEntity;
+import com.notesbanao.portal.repository.AccountDeletionRequestRepository;
+import com.notesbanao.portal.repository.UserService;
 import org.springframework.stereotype.Service;
 
 import com.notesbanao.portal.account.dto.DeletionRequestDto;
@@ -11,24 +14,26 @@ import com.notesbanao.portal.auth.dto.UserDto;
 import com.notesbanao.portal.common.ApiException;
 import com.notesbanao.portal.entity.ReferralEntity;
 import com.notesbanao.portal.referral.ReferralService;
-import com.notesbanao.portal.store.DemoDataStore;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Referrals and account deletion. */
 @Service
 public class AccountService {
+    private static final Duration DELETION_GRACE =
+            Duration.ofDays(7);
 
-    /** How long after a request the account would actually be removed. */
-    private static final Duration DELETION_GRACE = Duration.ofDays(7);
-
-    private final DemoDataStore store;
     private final ReferralService referralService;
+    private final UserService userService;
+    private final AccountDeletionRequestRepository deletionRequestRepository;
 
     public AccountService(
-            DemoDataStore store,
-            ReferralService referralService) {
+            ReferralService referralService,
+            UserService userService,
+            AccountDeletionRequestRepository deletionRequestRepository) {
 
-        this.store = store;
         this.referralService = referralService;
+        this.userService = userService;
+        this.deletionRequestRepository = deletionRequestRepository;
     }
 
     /**
@@ -72,9 +77,7 @@ public class AccountService {
                 + "/?auth=signup&ref="
                 + referral.getToken();
 
-        int reward = store.referralReward() == null
-                ? 0
-                : store.referralReward().points_amount();
+        int reward = referralService.getReferralReward();
 
         return new ReferralInviteResponse(
                 true,
@@ -84,38 +87,42 @@ public class AccountService {
         );
     }
 
-    public DeletionRequestDto currentDeletionRequest() {
-        return store.deletionRequest();
+    public DeletionRequestDto currentDeletionRequest(Long userId) {
+        return deletionRequestRepository.findByUserId(userId)
+                .map(request -> new DeletionRequestDto(
+                        Instant.ofEpochMilli(request.getRequestedAt()).toString(),
+                        Instant.ofEpochMilli(request.getEligibleAt()).toString()
+                ))
+                .orElse(null);
     }
 
-    public DeletionRequestDto requestDeletion(String rawReason) {
-
-        String reason = rawReason == null
-                ? ""
-                : rawReason.trim();
-
-        if (reason.isEmpty()) {
-            throw ApiException.badRequest(
-                    "Tell us why you are leaving."
-            );
-        }
+    @Transactional
+    public DeletionRequestDto requestDeletion(Long userId) {
 
         Instant now = Instant.now();
+        Instant eligibleAt = now.plus(DELETION_GRACE);
+//  Soft-delete the account.
+        userService.softDeleteUser(userId);
 
-        DeletionRequestDto request =
-                new DeletionRequestDto(
-                        reason,
-                        now.toString(),
-                        now.plus(DELETION_GRACE).toString()
-                );
+//  Store the 7-day deletion window
 
-        store.setDeletionRequest(request);
+        AccountDeletionRequestEntity entity = new AccountDeletionRequestEntity();
+        entity.setUserId(userId);
+        entity.setRequestedAt(now.toEpochMilli());
+        entity.setEligibleAt(eligibleAt.toEpochMilli());
 
-        return request;
+        deletionRequestRepository.save(entity);
+
+        return new DeletionRequestDto(
+                now.toString(),
+                eligibleAt.toString()
+        );
     }
 
-    public void revokeDeletion() {
-        store.setDeletionRequest(null);
+    @Transactional
+    public void revokeDeletion(Long userId) {
+        userService.restoreUser(userId);
+        deletionRequestRepository.deleteByUserId(userId);
     }
 
     /**

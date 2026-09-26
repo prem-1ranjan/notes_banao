@@ -80,8 +80,8 @@ public class AuthController implements AuthApi {
 
     @Override
     public SimpleResponse acceptTerms(HttpServletRequest request) {
-        sessionService.requireUser(request);
-        authService.acceptTerms();
+        UserDto user = sessionService.requireUser(request);
+        authService.acceptTerms(user);
         return SimpleResponse.success();
     }
 
@@ -95,19 +95,5 @@ public class AuthController implements AuthApi {
         authService.changePhone(user, request);
 
         return SimpleResponse.success("Phone number updated.");
-    }
-
-    @Override
-    public SimpleResponse deleteAccount(
-            HttpServletRequest request,
-            HttpServletResponse response) {
-
-        UserDto user = sessionService.requireUser(request);
-
-        authService.deleteAccount(user);
-
-        sessionService.endSession(response);
-
-        return SimpleResponse.success("Account deleted successfully.");
     }
 }

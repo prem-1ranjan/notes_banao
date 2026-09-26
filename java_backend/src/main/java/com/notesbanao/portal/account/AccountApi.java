@@ -1,14 +1,10 @@
 package com.notesbanao.portal.account;
 
+import com.notesbanao.portal.account.dto.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import com.notesbanao.portal.account.dto.DeletionStateResponse;
-import com.notesbanao.portal.account.dto.DeletionSubmitRequest;
-import com.notesbanao.portal.account.dto.ReferralInviteRequest;
-import com.notesbanao.portal.account.dto.ReferralInviteResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -24,7 +20,7 @@ public interface AccountApi {
     DeletionStateResponse deletionState(HttpServletRequest request);
 
     @PostMapping("/account/deletion-request")
-    DeletionStateResponse requestDeletion(@RequestBody DeletionSubmitRequest request, HttpServletRequest http);
+    DeletionStateResponse requestDeletion(HttpServletRequest http);
 
     @PostMapping("/account/deletion-request/revoke")
     DeletionStateResponse revokeDeletion(HttpServletRequest request);

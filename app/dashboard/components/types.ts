@@ -8,6 +8,7 @@ export type User = {
   phone_e164: string | null;
   phone_verified: boolean;
   email_verified: boolean;
+  deleted_at: string | null;
 };
 
 export type TrialStatus = {

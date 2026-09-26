@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Service
 public class ReferralService {
 
-    private static final int REFERRAL_REWARD = 50;
+    private static final int REFERRAL_REWARD = 15;
     private static final long REFERRAL_VALIDITY_DAYS = 7;
 
     private final ReferralRepository referralRepository;
@@ -30,6 +30,10 @@ public class ReferralService {
         this.referralRepository = referralRepository;
         this.userService = userService;
         this.transactionTemplate = transactionTemplate;
+    }
+
+    public int getReferralReward() {
+        return REFERRAL_REWARD;
     }
 
     private boolean isReferralValid(ReferralEntity referral){
@@ -126,7 +130,7 @@ public class ReferralService {
     /**
      * Completes a referral after the invitee successfully signs up.
      *
-     * The referrer receives 50 NB points only when:
+     * The referrer receives 15 NB points only when:
      *
      * - referral exists
      * - referral has not been used
@@ -185,7 +189,7 @@ public class ReferralService {
             throw ApiException.badRequest("This referral link has already been used.");
         }
 
-        // Award exactly 50 NB points to referrer
+        // Award exactly 15 NB points to referrer
         userService.addPoints(
                 referral.getReferrerUserId(),
                 REFERRAL_REWARD
